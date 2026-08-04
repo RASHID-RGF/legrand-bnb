@@ -35,7 +35,7 @@ const upload = multer({
 
 // ---------------- Auth ----------------
 router.get('/login', guestOnly, (req, res) => {
-  res.render('admin/login', { title: 'Admin Login — LeGrand', error: null, message: null });
+  res.render('admin/login', { title: 'Admin Login — LeGrand', active: '', error: null, message: null });
 });
 
 router.post('/login', guestOnly, (req, res) => {
@@ -44,6 +44,7 @@ router.post('/login', guestOnly, (req, res) => {
   if (!admin || !bcrypt.compareSync(password || '', admin.passwordHash)) {
     return res.status(401).render('admin/login', {
       title: 'Admin Login — LeGrand',
+      active: '',
       error: 'Invalid email or password.',
       message: null,
     });
@@ -128,6 +129,7 @@ router.post('/properties', upload.array('images', 12), (req, res) => {
       bathrooms: Number(req.body.bathrooms) || 1,
       guests: Number(req.body.guests) || 2,
       phone: req.body.phone,
+      phone2: req.body.phone2,
       whatsapp: req.body.whatsapp,
       email: req.body.email,
       instagram: req.body.instagram,
@@ -143,6 +145,16 @@ router.post('/properties', upload.array('images', 12), (req, res) => {
         : req.body.amenities
         ? [req.body.amenities]
         : [],
+      checkIn: req.body.checkIn,
+      checkOut: req.body.checkOut,
+      highlights: String(req.body.highlights || '')
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean),
+      houseRules: String(req.body.houseRules || '')
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter(Boolean),
       images,
     });
     res.redirect(`/admin/properties/${property.id}/edit?added=1`);
@@ -197,6 +209,7 @@ router.post('/properties/:id', upload.array('images', 12), (req, res) => {
     bathrooms: Number(req.body.bathrooms) || 1,
     guests: Number(req.body.guests) || 2,
     phone: req.body.phone,
+    phone2: req.body.phone2,
     whatsapp: req.body.whatsapp,
     email: req.body.email,
     instagram: req.body.instagram,
@@ -210,6 +223,16 @@ router.post('/properties/:id', upload.array('images', 12), (req, res) => {
       : req.body.amenities
       ? [req.body.amenities]
       : [],
+    checkIn: req.body.checkIn,
+    checkOut: req.body.checkOut,
+    highlights: String(req.body.highlights || '')
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean),
+    houseRules: String(req.body.houseRules || '')
+      .split(/\r?\n/)
+      .map((s) => s.trim())
+      .filter(Boolean),
     images: [...kept, ...newImages],
   });
 

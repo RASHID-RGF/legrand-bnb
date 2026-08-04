@@ -159,24 +159,41 @@
     </div>
   </section>
 
-  <!-- ============ BECOME A HOST ============ -->
+  <!-- ============ MAP + CONTACT ============ -->
   <section class="section">
     <div class="container">
-      <div class="host-split reveal">
-        <div class="host-media">
-          <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1400&auto=format&fit=crop" alt="Become a host">
+      <div class="map-split reveal">
+        <div class="map-panel-home">
+          <div id="home-map"></div>
+          <div class="map-legend">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            Every pin below is an exact stay location in Siaya Town.
+          </div>
         </div>
-        <div class="host-body">
-          <span class="eyebrow" style="color:var(--gold-400)">Become a Host</span>
-          <h2>Advertise Your Property on LeGrand</h2>
-          <p>Own a home, cottage or apartment in Siaya? List it on LeGrand and reach travellers looking for authentic local stays.</p>
-          <ul class="host-checks">
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Free to list — no subscription</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Premium photography support</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Guests contact you directly</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Featured placement for top homes</li>
-          </ul>
-          <a href="/contact" class="btn btn-gold">Advertise Property <span>→</span></a>
+        <div class="map-contact">
+          <span class="eyebrow" style="color:var(--gold-400)">Find us & talk to us</span>
+          <h2>Where Our Stays Are</h2>
+          <p>Tap a pin to see each stay, then reach the owner directly — call, WhatsApp or follow on social. No middlemen, no booking fees.</p>
+          <div class="contact-stack">
+            <a class="btn btn-phone" href="tel:<%= (settings.contactPhone || '').replace(/\s+/g, '') %>">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Call <%= settings.contactPhone %>
+            </a>
+            <a class="btn btn-phone" href="tel:<%= (settings.contactPhone2 || '+254 725 317 246').replace(/\s+/g, '') %>">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              Call <%= settings.contactPhone2 || '+254 725 317 246' %>
+            </a>
+            <a class="btn btn-whatsapp" href="https://wa.me/<%= settings.whatsapp %>?text=Hello%20LeGrand!%20I%20found%20you%20on%20the%20site%20and%20I%27d%20like%20to%20know%20more." target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.48-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.13.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.11 3.22 5.1 4.51.71.31 1.27.5 1.7.63.72.23 1.37.2 1.88.12.57-.09 1.76-.72 2-1.41.25-.7.25-1.29.18-1.42-.08-.12-.28-.2-.57-.35zM12.05 21.79h-.01a9.87 9.87 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.86 9.86 0 0 1-1.51-5.26c0-5.45 4.44-9.88 9.9-9.88a9.82 9.82 0 0 1 6.99 2.9 9.82 9.82 0 0 1 2.9 7c0 5.44-4.44 9.87-9.9 9.87zm8.42-18.3A11.8 11.8 0 0 0 12.05 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.14 1.59 5.94L.07 24l6.33-1.66a11.88 11.88 0 0 0 5.65 1.44c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.16-3.47-8.4z"/></svg>
+              WhatsApp <b style="margin-left:auto">→</b>
+            </a>
+          </div>
+          <div class="social-row" style="margin-top:1.6rem">
+            <a href="<%= settings.social.instagram || '#' %>" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg></a>
+            <a href="<%= settings.social.tiktok || '#' %>" aria-label="TikTok" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg></a>
+            <a href="<%= settings.social.facebook || '#' %>" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+          </div>
+          <p style="font-size:.85rem;color:rgba(255,255,255,.6);margin-top:1.4rem">Own a property nearby? <a href="/contact" style="color:var(--gold-400);font-weight:700">Become a host →</a></p>
         </div>
       </div>
     </div>
@@ -226,5 +243,53 @@
 </main>
 
 <%- include('partials/footer', { settings }) %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  (function () {
+    const el = document.getElementById('home-map');
+    if (!el || typeof L === 'undefined') return;
+
+    const props = <%- escapeJson(allProperties) %>;
+    const esc = (s) =>
+      String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    const withCoords = props.filter((p) => p.lat && p.lng);
+    if (!withCoords.length) return;
+
+    const map = L.map(el, { scrollWheelZoom: false }).setView([0.058, 34.296], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(map);
+
+    const markers = withCoords.map((p) => {
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:#0e4f38;color:#fff;border:2px solid #d4af37;border-radius:50%;width:36px;height:36px;display:grid;place-items:center;font-weight:800;font-size:11px;box-shadow:0 4px 14px rgba(0,0,0,.35)">${(p.title || '?').slice(0, 1)}</div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+      const m = L.marker([p.lat, p.lng], { icon }).addTo(map);
+      const img = (p.images && p.images[0]) || '/static/img/placeholder.svg';
+      m.bindPopup(
+        `<div class="map-pop"><a href="/properties/${esc(p.slug)}"><img src="${esc(img)}" alt=""></a><b>${esc(p.title)}</b><span class="mp-price">KSh ${Number(p.pricePerNight).toLocaleString()}/night</span><small>${esc(p.location)}, ${esc(p.subCounty)}</small></div>`
+      );
+      return m;
+    });
+
+    if (markers.length > 1) {
+      const bounds = L.featureGroup(markers).getBounds();
+      map.fitBounds(bounds.pad(0.25));
+    }
+
+    // Enable scroll zoom only when hovering the map
+    el.addEventListener('mouseenter', () => map.scrollWheelZoom.enable());
+    el.addEventListener('mouseleave', () => map.scrollWheelZoom.disable());
+  })();
+</script>
 </body>
 </html>

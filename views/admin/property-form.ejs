@@ -1,7 +1,7 @@
 <%
 const p = property;
 const isEdit = !!p;
-const amenitiesPool = ['WiFi','Free Parking','Kitchen','Hot Water','Air Conditioning','Garden','BBQ Grill','Smart TV','Security','Pool','Balcony','Fireplace','Breakfast','Housekeeping','Generator Backup','Outdoor Dining'];
+const amenitiesPool = ['WiFi','Free Parking','Kitchen','Hot Water','Air Conditioning','Garden','BBQ Grill','Smart TV','Security','Security Lights','Pool','Balcony','Fireplace','Breakfast','Housekeeping','Generator Backup','Outdoor Dining','Self Check-in','Children Friendly','Washing Machine','Desk/Workspace','Free Cancellation'];
 const selected = (p && p.amenities) || [];
 const body = `
 <form method="POST" action="${isEdit ? '/admin/properties/' + p.id : '/admin/properties'}" enctype="multipart/form-data" class="admin-form">
@@ -10,8 +10,8 @@ const body = `
     <input type="text" name="title" required value="${p ? p.title.replace(/"/g, '&quot;') : ''}" placeholder="e.g. KIBOKO">
   </div>
   <div class="form-field">
-    <label>Price per night (USD) *</label>
-    <input type="number" name="pricePerNight" required min="0" value="${p ? p.pricePerNight : ''}" placeholder="e.g. 8500">
+    <label>Price per night (KSh) *</label>
+    <input type="number" name="pricePerNight" required min="0" value="${p ? p.pricePerNight : ''}" placeholder="e.g. 1800">
   </div>
 
   <div class="form-field">
@@ -63,16 +63,20 @@ const body = `
       <input type="text" name="phone" value="${p ? p.phone : ''}" placeholder="+254 7XX XXX XXX">
     </div>
     <div class="form-field">
-      <label>WhatsApp (no +, e.g. 2547XX...)</label>
-      <input type="text" name="whatsapp" value="${p ? p.whatsapp : ''}" placeholder="254712345678">
+      <label>Phone 2</label>
+      <input type="text" name="phone2" value="${p ? p.phone2 || '' : ''}" placeholder="+254 7XX XXX XXX">
     </div>
     <div class="form-field">
-      <label>Email</label>
-      <input type="email" name="email" value="${p ? p.email : ''}" placeholder="owner@email.com">
+      <label>WhatsApp (no +, e.g. 2547XX...)</label>
+      <input type="text" name="whatsapp" value="${p ? p.whatsapp : ''}" placeholder="254712345678">
     </div>
   </div>
 
   <div class="form-row-3">
+    <div class="form-field">
+      <label>Email</label>
+      <input type="email" name="email" value="${p ? p.email : ''}" placeholder="owner@email.com">
+    </div>
     <div class="form-field">
       <label>Instagram</label>
       <input type="url" name="instagram" value="${p ? p.instagram || '' : ''}" placeholder="https://instagram.com/your-handle">
@@ -81,13 +85,13 @@ const body = `
       <label>TikTok</label>
       <input type="url" name="tiktok" value="${p ? p.tiktok || '' : ''}" placeholder="https://tiktok.com/@your-handle">
     </div>
+  </div>
+
+  <div class="form-row-3">
     <div class="form-field">
       <label>Facebook</label>
       <input type="url" name="facebook" value="${p ? p.facebook || '' : ''}" placeholder="https://facebook.com/your-page">
     </div>
-  </div>
-
-  <div class="form-row-3">
     <div class="form-field">
       <label>Latitude (for map)</label>
       <input type="number" step="any" name="lat" value="${p && p.lat ? p.lat : ''}" placeholder="0.061">
@@ -96,6 +100,9 @@ const body = `
       <label>Longitude (for map)</label>
       <input type="number" step="any" name="lng" value="${p && p.lng ? p.lng : ''}" placeholder="34.2886">
     </div>
+  </div>
+
+  <div class="form-row-3">
     <div class="form-field" style="display:flex;flex-direction:row;align-items:center;gap:.8rem">
       <label style="margin:0">Featured</label>
       <label class="switch">
@@ -118,6 +125,27 @@ const body = `
           <input type="checkbox" name="amenities" value="${a}" ${selected.includes(a) ? 'checked' : ''}> ${a}
         </label>`).join('')}
     </div>
+  </div>
+
+  <div class="form-row-2">
+    <div class="form-field">
+      <label>Check-in time</label>
+      <input type="text" name="checkIn" value="${p ? p.checkIn || '' : ''}" placeholder="2:00 PM">
+    </div>
+    <div class="form-field">
+      <label>Check-out time</label>
+      <input type="text" name="checkOut" value="${p ? p.checkOut || '' : ''}" placeholder="11:00 AM">
+    </div>
+  </div>
+
+  <div class="form-field full">
+    <label>Highlights (one per line)</label>
+    <textarea name="highlights" rows="4" placeholder="Gated compound&#10;2-min walk to town centre">${p ? (p.highlights || []).join('\n') : ''}</textarea>
+  </div>
+
+  <div class="form-field full">
+    <label>House rules (one per line)</label>
+    <textarea name="houseRules" rows="4" placeholder="No smoking indoors&#10;Quiet hours from 10 PM">${p ? (p.houseRules || []).join('\n') : ''}</textarea>
   </div>
 
   <div class="form-field full">

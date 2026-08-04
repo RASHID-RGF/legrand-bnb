@@ -110,6 +110,7 @@ router.get('/', (req, res) => {
     destinations,
     settings,
     propertiesByCategory,
+    allProperties: properties,
   });
 });
 

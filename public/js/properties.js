@@ -76,7 +76,7 @@
             ${p.rating ? `<span class="rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>${p.rating}</span>` : ''}
           </div>
           <div class="card-foot">
-            <div class="card-price"><b>$${Number(p.pricePerNight).toLocaleString()}</b> <span>/ night</span></div>
+            <div class="card-price"><b>KSh ${Number(p.pricePerNight).toLocaleString()}</b> <span>/ night</span></div>
             <a href="/properties/${esc(p.slug)}" class="btn btn-ghost btn-sm">View <span>→</span></a>
           </div>
         </div>
@@ -131,13 +131,14 @@
     withCoords.forEach((p) => {
       const icon = L.divIcon({
         className: '',
-        html: `<div style="background:#0e4f38;color:#fff;border:2px solid #d4af37;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.35)">$${Math.round(p.pricePerNight / 1000)}k</div>`,
-        iconSize: [34, 34],
+        html: `<div style="background:#0e4f38;color:#fff;border:2px solid #d4af37;border-radius:50%;width:48px;height:48px;display:grid;place-items:center;font-weight:800;font-size:11px;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.35)">KSh ${(Number(p.pricePerNight) / 1000).toFixed(1).replace(/\.0$/, '')}k</div>`,
+        iconSize: [48, 48],
+        iconAnchor: [24, 24],
         iconAnchor: [17, 17],
       });
       const m = L.marker([p.lat, p.lng], { icon }).addTo(map);
       m.bindPopup(
-        `<div class="map-pop"><a href="/properties/${esc(p.slug)}"><img src="${esc(p.image)}" alt=""></a><b>${esc(p.title)}</b><span class="mp-price">$${Number(p.pricePerNight).toLocaleString()}/night</span><small>${esc(p.location)}, ${esc(p.subCounty)}</small></div>`
+        `<div class="map-pop"><a href="/properties/${esc(p.slug)}"><img src="${esc(p.image)}" alt=""></a><b>${esc(p.title)}</b><span class="mp-price">KSh ${Number(p.pricePerNight).toLocaleString()}/night</span><small>${esc(p.location)}, ${esc(p.subCounty)}</small></div>`
       );
       markers.push(m);
     });

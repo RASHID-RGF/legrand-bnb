@@ -30,7 +30,7 @@
         ${latestProperties.map(p => `
         <tr>
           <td><div class="tbl-prop"><img src="${p.images[0] || '/static/img/placeholder.svg'}" alt=""><div><b>${p.title}</b><small>${p.propertyType}</small></div></div></td>
-          <td><b>$${Number(p.pricePerNight).toLocaleString()}</b></td>
+          <td><b>KSh ${Number(p.pricePerNight).toLocaleString()}</b></td>
           <td>${p.location}, ${p.subCounty}</td>
           <td>${p.featured ? '<span class="badge badge-gold">Featured</span>' : '<span class="badge badge-muted">Standard</span>'}</td>
           <td><div class="row-actions">
