@@ -4,8 +4,12 @@
 const express = require('express');
 const db = require('../config/db');
 const { applyFilters } = require('./public');
+const { requireUserAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+// All API endpoints require a signed-in visitor
+router.use(requireUserAuth);
 
 // Property search + filter (used by live search & map view)
 router.get('/properties', (req, res) => {

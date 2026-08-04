@@ -1,0 +1,87 @@
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/header', { active }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="crumbs"><a href="/">Home</a> / <span>Blog</span></div>
+    <h1>LeGrand Stories & Travel Notes</h1>
+    <p>Guides, local tips and behind-the-scenes updates from Siaya County.</p>
+  </div>
+</section>
+
+<main class="section">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Fresh from the blog</span>
+      <h2>Latest Articles</h2>
+    </div>
+
+    <div class="blog-grid">
+      <article class="blog-card reveal">
+        <div class="blog-media">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop" alt="Exploring Siaya" loading="lazy">
+          <span class="blog-tag">Travel Guide</span>
+        </div>
+        <div class="blog-body">
+          <div class="blog-meta"><span>Aug 2, 2026</span> · <span>4 min read</span></div>
+          <h2><a href="#">Weekend Getaways in Siaya Town: Where to Start</a></h2>
+          <p>From lakeside sundowners to quiet garden escapes, Siaya Town packs a surprising amount of charm into one small county capital. Here's our starter guide for first-time visitors.</p>
+          <a href="#" class="btn btn-ghost btn-sm">Read more <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="blog-card reveal d1">
+        <div class="blog-media">
+          <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=1200&auto=format&fit=crop" alt="Lake Victoria" loading="lazy">
+          <span class="blog-tag">Local Life</span>
+        </div>
+        <div class="blog-body">
+          <div class="blog-meta"><span>Jul 26, 2026</span> · <span>3 min read</span></div>
+          <h2><a href="#">5 Reasons Travellers Love Siaya's Hidden Stays</a></h2>
+          <p>Honest photos, direct owner contact, zero booking fees — and a warm welcome that big platforms can't match. We break down what makes staying local so special.</p>
+          <a href="#" class="btn btn-ghost btn-sm">Read more <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="blog-card reveal d2">
+        <div class="blog-media">
+          <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=1200&auto=format&fit=crop" alt="Cosy cottage" loading="lazy">
+          <span class="blog-tag">How To</span>
+        </div>
+        <div class="blog-body">
+          <div class="blog-meta"><span>Jul 18, 2026</span> · <span>5 min read</span></div>
+          <h2><a href="#">How to Choose the Right Stay for Your Trip</a></h2>
+          <p>Family gathering, business stopover or romantic escape? We explain how to match a property's layout, amenities and location to the kind of trip you're planning.</p>
+          <a href="#" class="btn btn-ghost btn-sm">Read more <span>→</span></a>
+        </div>
+      </article>
+
+      <article class="blog-card reveal d3">
+        <div class="blog-media">
+          <img src="https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=1200&auto=format&fit=crop" alt="Family gathering" loading="lazy">
+          <span class="blog-tag">Family</span>
+        </div>
+        <div class="blog-body">
+          <div class="blog-meta"><span>Jul 9, 2026</span> · <span>4 min read</span></div>
+          <h2><a href="#">Planning a Family Celebration in Siaya</a></h2>
+          <p>Treehouses, green lawns and bonfire nights — here's what to know about hosting birthdays and reunions at our family-friendly stays, straight from our hosts.</p>
+          <a href="#" class="btn btn-ghost btn-sm">Read more <span>→</span></a>
+        </div>
+      </article>
+    </div>
+
+    <div class="cta-banner reveal" style="margin-top:3.5rem">
+      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop" alt="" loading="lazy">
+      <h2>Read, then come stay</h2>
+      <p>Articles are just the beginning — the real story happens at our properties.</p>
+      <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+        <a href="/properties" class="btn btn-gold">Browse Stays</a>
+        <a href="/contact" class="btn btn-light">Talk to Us</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer', { settings }) %>
+</body>
+</html>

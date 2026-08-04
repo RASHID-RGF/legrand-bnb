@@ -26,6 +26,10 @@
           Enquiries
           <% if (typeof unreadCount !== 'undefined' && unreadCount > 0) { %><span class="badge badge-gold" style="margin-left:auto"><%= unreadCount %></span><% } %>
         </a>
+        <a href="/admin/users" class="<%= active === 'users' ? 'active' : '' %>">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Users
+        </a>
       </nav>
       <div class="side-foot">
         <a href="/" target="_blank" class="admin-nav" style="display:block;color:rgba(255,255,255,.75);font-size:.85rem;padding:.5rem .9rem;border-radius:10px">↗ View site</a>

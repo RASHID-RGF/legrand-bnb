@@ -85,6 +85,7 @@ router.get('/', (req, res) => {
       categories: categories.length,
       enquiries: enquiries.length,
       unread,
+      users: db.getUsers().length,
     },
     recentEnquiries,
     featuredProperties: properties.filter((p) => p.featured).slice(0, 3),
@@ -293,6 +294,22 @@ router.post('/enquiries/:id/read', (req, res) => {
 router.post('/enquiries/:id/delete', (req, res) => {
   db.deleteEnquiry(req.params.id);
   res.redirect('/admin/enquiries');
+});
+
+// ---------------- Users (site visitors) ----------------
+router.get('/users', (req, res) => {
+  const users = db.getUsers().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.render('admin/users', {
+    title: 'Users — LeGrand Admin',
+    active: 'users',
+    admin: req.admin,
+    users,
+  });
+});
+
+router.post('/users/:id/delete', (req, res) => {
+  db.deleteUser(req.params.id);
+  res.redirect('/admin/users?deleted=1');
 });
 
 module.exports = router;

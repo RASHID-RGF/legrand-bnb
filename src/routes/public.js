@@ -114,6 +114,121 @@ router.get('/', (req, res) => {
   });
 });
 
+// ---------------- Auth (public) ----------------
+const bcrypt = require('bcryptjs');
+const { signUserToken, guestUserOnly, requireUserAuth } = require('../middleware/auth');
+
+router.get('/login', guestUserOnly, (req, res) => {
+  res.render('login', {
+    title: 'Sign In — LeGrand',
+    active: '',
+    error: null,
+    message: null,
+    next: req.query.next || '/',
+  });
+});
+
+router.post('/login', guestUserOnly, (req, res) => {
+  const { email, password } = req.body;
+  const user = db.getUserByEmail(email || '');
+  if (!user || !bcrypt.compareSync(password || '', user.passwordHash)) {
+    return res.status(401).render('login', {
+      title: 'Sign In — LeGrand',
+      active: '',
+      error: 'Invalid email or password.',
+      message: null,
+      next: req.query.next || '/',
+    });
+  }
+  db.updateUser(user.id, { lastLoginAt: new Date().toISOString() });
+  res.cookie('legrand_user_token', signUserToken(user), {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+  res.redirect(req.query.next || '/');
+});
+
+router.get('/register', guestUserOnly, (req, res) => {
+  res.render('register', {
+    title: 'Create Account — LeGrand',
+    active: '',
+    error: null,
+    next: req.query.next || '/',
+  });
+});
+
+router.post('/register', guestUserOnly, (req, res) => {
+  const { name, email, password } = req.body;
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanName = String(name || '').trim();
+  if (!cleanName || !cleanEmail || !password) {
+    return res.status(400).render('register', {
+      title: 'Create Account — LeGrand',
+      active: '',
+      error: 'Name, email and password are all required.',
+      next: req.query.next || '/',
+    });
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(cleanEmail)) {
+    return res.status(400).render('register', {
+      title: 'Create Account — LeGrand',
+      active: '',
+      error: 'Please enter a valid email address.',
+      next: req.query.next || '/',
+    });
+  }
+  if (String(password).length < 6) {
+    return res.status(400).render('register', {
+      title: 'Create Account — LeGrand',
+      active: '',
+      error: 'Password must be at least 6 characters.',
+      next: req.query.next || '/',
+    });
+  }
+  if (db.getUserByEmail(cleanEmail)) {
+    return res.status(409).render('register', {
+      title: 'Create Account — LeGrand',
+      active: '',
+      error: 'An account with that email already exists. Try signing in instead.',
+      next: req.query.next || '/',
+    });
+  }
+  const user = db.addUser({
+    name: cleanName,
+    email: cleanEmail,
+    passwordHash: bcrypt.hashSync(password, 10),
+  });
+  res.cookie('legrand_user_token', signUserToken(user), {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+  res.redirect(req.query.next || '/');
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('legrand_user_token');
+  res.redirect('/');
+});
+
+// Everything below requires a signed-in visitor.
+// Skip /admin and /api — those are mounted elsewhere and must not be
+// intercepted by the public router's catch-all (admin login, API etc.).
+router.use((req, res, next) => {
+  if (req.path.startsWith('/admin') || req.path.startsWith('/api')) return next();
+  return requireUserAuth(req, res, next);
+});
+
+// ---------------- Blog ----------------
+router.get('/blog', (req, res) => {
+  res.render('blog', {
+    title: 'Blog — LeGrand',
+    active: 'blog',
+    settings: db.load().settings,
+  });
+});
+
 // ---------------- Properties (with filters) ----------------
 router.get('/properties', (req, res) => {
   const properties = db.getProperties();

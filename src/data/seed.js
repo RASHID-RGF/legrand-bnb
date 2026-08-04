@@ -304,6 +304,7 @@ function seedDatabase() {
   });
   return {
     properties,
+    users: [],
     admins: [
       {
         id: 'admin-1',
@@ -335,13 +336,19 @@ function seedDatabase() {
   };
 }
 
-// Allow `npm run seed` to force a reseed
+// Allow `npm run seed` to force a fresh reseed into MongoDB
 if (require.main === module) {
-  const fs = require('fs');
-  const path = require('path');
-  const dbPath = path.join(__dirname, 'db.json');
-  fs.writeFileSync(dbPath, JSON.stringify(seedDatabase(), null, 2), 'utf8');
-  console.log('✅ Seeded LeGrand database at', dbPath);
+  require('dotenv').config();
+  const db = require('../config/db');
+  (async () => {
+    await db.connect();
+    await db.seedAll(seedDatabase());
+    console.log('✅ Seeded LeGrand MongoDB database.');
+    process.exit(0);
+  })().catch((err) => {
+    console.error('✖ Seeding failed:', err.message);
+    process.exit(1);
+  });
 }
 
 module.exports = { seedDatabase };

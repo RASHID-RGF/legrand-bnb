@@ -211,6 +211,16 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; font-weigh
 
 .nav-actions { display: flex; align-items: center; gap: 0.6rem; }
 
+.nav-user { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.35rem 0.3rem 0.45rem; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
+.nav-avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-500); color: var(--green-950); font-weight: 800; font-size: 0.8rem; }
+.nav-user-name { font-size: 0.82rem; font-weight: 700; color: var(--ink); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-logout-form { display: flex; }
+.nav-logout { display: grid; place-items: center; width: 28px; height: 28px; border: none; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; transition: background 0.25s, color 0.25s; }
+.nav-logout:hover { background: var(--bg-soft); color: var(--red, #c0392b); }
+.nav-logout svg { width: 15px; height: 15px; }
+.nav.scrolled .nav-user, .nav.on-dark .nav-user { border-color: var(--line); background: var(--card); }
+.nav.scrolled .nav-user-name, .nav.on-dark .nav-user-name { color: var(--ink); }
+
 .icon-btn {
   position: relative;
   width: 42px; height: 42px;
@@ -425,6 +435,29 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; font-weigh
 
 /* ---------- Property cards ---------- */
 .grid-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.6rem; }
+
+/* ---------- Blog ---------- */
+.blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.6rem; }
+.blog-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow); transition: transform 0.35s var(--ease), box-shadow 0.35s, border-color 0.35s; }
+.blog-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: var(--gold-400); }
+.blog-media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; }
+.blog-media img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
+.blog-card:hover .blog-media img { transform: scale(1.06); }
+.blog-tag { position: absolute; top: 0.9rem; left: 0.9rem; background: var(--gold-500); color: var(--green-950); font-size: 0.7rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; padding: 0.3rem 0.7rem; border-radius: 999px; }
+.blog-body { padding: 1.4rem 1.4rem 1.6rem; display: flex; flex-direction: column; gap: 0.6rem; flex: 1; }
+.blog-meta { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.blog-body h2 { font-size: 1.2rem; }
+.blog-body h2 a { color: var(--ink); }
+.blog-body h2 a:hover { color: var(--green-600); }
+.blog-body p { font-size: 0.9rem; color: var(--ink-soft); flex: 1; }
+.blog-body .btn { align-self: flex-start; margin-top: 0.2rem; }
+
+/* ---------- Locked prompt (home contact panel) ---------- */
+.locked-prompt { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; text-align: center; padding: 1.6rem 1.2rem; border: 1.5px dashed rgba(255,255,255,0.28); border-radius: var(--radius-md); background: rgba(255,255,255,0.06); }
+.locked-prompt svg { width: 30px; height: 30px; color: var(--gold-400); }
+.locked-prompt b { font-size: 0.95rem; color: #fff; }
+.locked-prompt a { color: var(--gold-400); font-weight: 800; font-size: 0.9rem; }
+.locked-prompt a:hover { text-decoration: underline; }
 
 .property-card {
   background: var(--card);
