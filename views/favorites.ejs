@@ -1,0 +1,68 @@
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/header', { active }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="crumbs"><a href="/">Home</a> / <span>Favorites</span></div>
+    <h1>My Favorites</h1>
+    <p>Your shortlisted stays, saved on this device.</p>
+  </div>
+</section>
+
+<main class="section">
+  <div class="container">
+    <div class="grid-cards" id="fav-grid"></div>
+    <div class="fav-empty" id="fav-empty" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <h2>No favorites yet</h2>
+      <p>Tap the ♥ on any property to save it here for later.</p>
+      <a href="/properties" class="btn btn-primary" style="margin-top:1.2rem">Discover Stays</a>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer', { settings }) %>
+<script>
+  (function () {
+    const all = <%- escapeJson(allProperties) %>;
+    const grid = document.getElementById('fav-grid');
+    const empty = document.getElementById('fav-empty');
+    const favs = window.LeGrandFavs.get();
+    const mine = all.filter((p) => favs.includes(p.id));
+
+    if (!mine.length) {
+      grid.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+    grid.innerHTML = mine
+      .map((p) => {
+        const img = p.images && p.images.length ? p.images[0] : '/static/img/placeholder.svg';
+        return `
+        <article class="property-card reveal visible">
+          <div class="card-media">
+            <a href="/properties/${p.slug}"><img src="${img}" alt="${p.title}" loading="lazy"></a>
+            ${p.featured ? '<span class="card-ribbon">✦ Featured</span>' : ''}
+            ${p.category ? `<span class="card-category">${p.category}</span>` : ''}
+            <button class="fav-btn active" data-id="${p.id}" aria-label="Remove from favorites"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></button>
+          </div>
+          <div class="card-body">
+            <div class="card-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${p.location}, ${p.subCounty}</div>
+            <h3><a href="/properties/${p.slug}">${p.title}</a></h3>
+            <div class="card-meta">
+              <span>${p.bedrooms} bd</span><span>${p.bathrooms} ba</span><span>Sleeps ${p.guests}</span>
+              ${p.rating ? `<span class="rating"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>${p.rating}</span>` : ''}
+            </div>
+            <div class="card-foot">
+              <div class="card-price"><b>$${Number(p.pricePerNight).toLocaleString()}</b> <span>/ night</span></div>
+              <a href="/properties/${p.slug}" class="btn btn-ghost btn-sm">View →</a>
+            </div>
+          </div>
+        </article>`;
+      })
+      .join('');
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<% const current = typeof active !== 'undefined' ? active : ''; %>
+<% const isHome = current === 'home'; %>
+<nav class="nav" data-always-solid="<%= isHome ? 'false' : 'true' %>">
+  <div class="nav-inner">
+    <a href="/" class="brand">
+      <img src="/static/img/logo.svg" alt="LeGrand">
+      <span>Le<em>Grand</em></span>
+    </a>
+
+    <div class="nav-links">
+      <a href="/" class="<%= current === 'home' ? 'active' : '' %>">Home</a>
+      <a href="/properties" class="<%= current === 'properties' ? 'active' : '' %>">Properties</a>
+      <a href="/about" class="<%= current === 'about' ? 'active' : '' %>">About</a>
+      <a href="/contact" class="<%= current === 'contact' ? 'active' : '' %>">Contact</a>
+      <a href="/admin/login">Hosts</a>
+    </div>
+
+    <div class="nav-actions">
+      <button class="icon-btn hide-sm" data-theme-toggle aria-label="Toggle dark mode">
+        <svg class="theme-icon-sun" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <a href="/favorites" class="icon-btn hide-sm" aria-label="Favorites">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <span class="fav-badge">0</span>
+      </a>
+      <button class="icon-btn burger" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu">
+  <button class="icon-btn mobile-close" aria-label="Close menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <a href="/" class="<%= current === 'home' ? 'active' : '' %>">Home</a>
+  <a href="/properties" class="<%= current === 'properties' ? 'active' : '' %>">Properties</a>
+  <a href="/about" class="<%= current === 'about' ? 'active' : '' %>">About</a>
+  <a href="/contact" class="<%= current === 'contact' ? 'active' : '' %>">Contact</a>
+  <a href="/favorites" class="<%= current === 'favorites' ? 'active' : '' %>">Favorites</a>
+</div>

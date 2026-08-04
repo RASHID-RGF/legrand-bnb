@@ -1,0 +1,230 @@
+<%- include('partials/head', { title, active }) %>
+
+<!-- Preloader -->
+<div class="preloader">
+  <div>
+    <div class="pre-logo"><img src="/static/img/logo.svg" alt="LeGrand"></div>
+    <div class="pre-bar"></div>
+  </div>
+</div>
+
+<%- include('partials/header', { active }) %>
+
+<main>
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="hero-media">
+      <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2000&auto=format&fit=crop" alt="Lake Victoria, Siaya">
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-badge reveal visible">✦ ★ Rated 4.9 by local travellers</div>
+      <h1 class="reveal visible d1">Discover Exceptional Stays<br><em>Across Siaya.</em></h1>
+      <p class="hero-sub reveal visible d2">Browse verified homes, cottages and villas across Siaya Town — view honest photos, compare stays, and contact owners directly. No middlemen. No booking fees.</p>
+
+      <form class="hero-search reveal visible d3" action="/properties" method="GET">
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+          <div style="width:100%">
+            <label for="hero-q">Search</label>
+            <input type="text" id="hero-q" name="q" placeholder="Cottage, villa, bungalow…" autocomplete="off">
+          </div>
+        </div>
+        <div class="field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div style="width:100%">
+            <label for="hero-loc">Where in Siaya?</label>
+            <select id="hero-loc" name="location">
+              <option value="all">Anywhere</option>
+              <% ['Siaya Town'].forEach(l => { %>
+              <option value="<%= l %>"><%= l %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-gold">Search Stays <span>→</span></button>
+      </form>
+
+      <div class="hero-stats reveal visible d4">
+        <div class="stat"><b data-count="4" data-suffix="+">0</b><span>Curated Stays</span></div>
+        <div class="stat"><b data-count="2" data-suffix="">0</b><span>Prime Locations</span></div>
+        <div class="stat"><b data-count="100" data-suffix="%">0</b><span>Verified Listings</span></div>
+        <div class="stat"><b data-count="4.9" data-suffix="★">0</b><span>Average Rating</span></div>
+      </div>
+    </div>
+    <div class="scroll-hint"></div>
+  </section>
+
+  <!-- ============ MARQUEE ============ -->
+  <div class="marquee">
+    <div class="marquee-track">
+      <% for (let i = 0; i < 2; i++) { %>
+        <% destinations.forEach(d => { %><span><%= d.name %> <b>·</b></span><% }) %>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- ============ FEATURED PROPERTIES ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Handpicked for you</span>
+        <h2>Featured Properties</h2>
+        <p>Our four signature stays in Siaya Town — chosen for their character, comfort and glowing reviews.</p>
+      </div>
+      <div class="grid-cards">
+        <% featured.forEach((p, i) => { %>
+          <div class="reveal d<%= (i % 4) + 1 %>"><%- include('partials/property-card', { p }) %></div>
+        <% }) %>
+      </div>
+      <div style="text-align:center;margin-top:2.5rem" class="reveal">
+        <a href="/properties" class="btn btn-primary">Browse All Properties <span>→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATEGORIES ============ -->
+  <section class="section section-soft">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Find your vibe</span>
+        <h2>Browse by Category</h2>
+        <p>From family-friendly hideaways to luxury villas — every stay has its own story.</p>
+      </div>
+      <div class="cat-grid">
+        <% const catImages = { 'Family': 'photo-1510798831971-661eb04b3739', 'Luxury': 'photo-1613490493576-7fde63acd811', 'Budget': 'photo-1522708323590-d24dbb6b0267' }; %>
+        <% categories.forEach((c, i) => { %>
+        <a href="/properties?category=<%= encodeURIComponent(c) %>" class="cat-tile reveal d<%= i + 1 %>">
+          <img src="https://images.unsplash.com/<%= catImages[c] || 'photo-1506744038136-46273834b3fb' %>?q=80&w=900&auto=format&fit=crop" alt="<%= c %>" loading="lazy">
+          <span class="cat-count"><%= propertiesByCategory && propertiesByCategory[c] || 0 %> stays</span>
+          <div class="cat-label"><h3><%= c %></h3><p>Explore →</p></div>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DESTINATIONS ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Explore Siaya</span>
+        <h2>Popular Destinations</h2>
+        <p>Stay near Siaya Hotel or Siaya Prisons — pick a spot and start exploring.</p>
+      </div>
+      <div class="dest-grid">
+        <% destinations.slice(0, 8).forEach((d, i) => { %>
+        <a href="/properties?location=<%= encodeURIComponent(d.name) %>" class="dest-card reveal d<%= (i % 4) + 1 %>">
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=700&auto=format&fit=crop" alt="<%= d.name %>" loading="lazy">
+          <div class="dest-info">
+            <h3><%= d.name %></h3>
+            <p><%= d.tag %></p>
+            <small><%= d.count %> properties</small>
+          </div>
+        </a>
+        <% }) %>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WHY LEGRAND ============ -->
+  <section class="section section-soft">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Why LeGrand?</span>
+        <h2>The Smarter Way to Stay</h2>
+      </div>
+      <div class="feature-grid">
+        <div class="feature-tile reveal">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></div>
+          <h3>Verified Listings</h3>
+          <p>Every property is vetted by our team. What you see in the photos is exactly what you get.</p>
+        </div>
+        <div class="feature-tile reveal d1">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>
+          <h3>High Quality Photos</h3>
+          <p>Professionally shot galleries so you can picture your stay before you arrive.</p>
+        </div>
+        <div class="feature-tile reveal d2">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+          <h3>Direct Contact</h3>
+          <p>Chat with owners on WhatsApp or call them directly. No middlemen, no extra fees.</p>
+        </div>
+        <div class="feature-tile reveal d3">
+          <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M9 10h.01M15 10h.01"/></svg></div>
+          <h3>Discover Local Stays</h3>
+          <p>Uncover Siaya’s best stays — from boutique cottages to luxury villas near Siaya Hotel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ BECOME A HOST ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="host-split reveal">
+        <div class="host-media">
+          <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1400&auto=format&fit=crop" alt="Become a host">
+        </div>
+        <div class="host-body">
+          <span class="eyebrow" style="color:var(--gold-400)">Become a Host</span>
+          <h2>Advertise Your Property on LeGrand</h2>
+          <p>Own a home, cottage or apartment in Siaya? List it on LeGrand and reach travellers looking for authentic local stays.</p>
+          <ul class="host-checks">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Free to list — no subscription</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Premium photography support</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Guests contact you directly</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg> Featured placement for top homes</li>
+          </ul>
+          <a href="/contact" class="btn btn-gold">Advertise Property <span>→</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section class="section section-soft">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="eyebrow">Traveller love</span>
+        <h2>What Guests Say</h2>
+      </div>
+      <div class="testi-wrap reveal">
+        <div class="testi-track">
+          <% testimonials.forEach((t) => { %>
+          <div class="testi-slide">
+            <div class="testi-avatar"><%= t.name.split(' ').map(w => w[0]).join('').slice(0,2) %></div>
+            <div class="testi-stars"><% for (let i = 0; i < 5; i++) { %><%= i < t.rating ? '★' : '☆' %><% } %></div>
+            <p class="testi-quote">“<%= t.quote %>”</p>
+            <div class="testi-author"><b><%= t.name %></b><span><%= t.role %></span></div>
+          </div>
+          <% }) %>
+        </div>
+        <div class="testi-nav">
+          <button class="testi-prev" aria-label="Previous testimonial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button class="testi-next" aria-label="Next testimonial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        </div>
+        <div class="testi-dots"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="cta-banner reveal">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1600&auto=format&fit=crop" alt="" loading="lazy">
+        <h2>Ready to Explore Siaya?</h2>
+        <p>Find your perfect escape — or talk to us and we'll help you plan the trip.</p>
+        <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+          <a href="/properties" class="btn btn-gold">Find a Stay</a>
+          <a href="/contact" class="btn btn-light">Talk to Us</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<%- include('partials/footer', { settings }) %>
+</body>
+</html>

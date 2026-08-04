@@ -1,0 +1,139 @@
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/header', { active }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="crumbs"><a href="/">Home</a> / <span>Properties</span></div>
+    <h1>Properties in Siaya</h1>
+    <p><%= count %> of <%= total %> verified stays across the county — contact owners directly.</p>
+  </div>
+</section>
+
+<main class="section" style="padding-top:2.5rem">
+  <div class="container">
+    <div class="props-layout">
+
+      <!-- ============ FILTER SIDEBAR ============ -->
+      <aside class="filter-panel reveal visible">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></svg>
+          Filters
+        </h3>
+
+        <div class="filter-group">
+          <label for="f-q">Search</label>
+          <input type="text" id="f-q" data-live-search placeholder="Villa, cottage, bungalow…" value="<%= query.q || '' %>">
+        </div>
+
+        <div class="filter-group">
+          <label for="f-location">Location</label>
+          <select id="f-location" data-key="location">
+            <option value="all">All of Siaya</option>
+            <% locations.forEach(l => { %>
+            <option value="<%= l %>" <%= query.location === l ? 'selected' : '' %>><%= l %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="f-type">Property Type</label>
+          <select id="f-type" data-key="type">
+            <option value="all">Any type</option>
+            <% types.forEach(t => { %>
+            <option value="<%= t %>" <%= query.type === t ? 'selected' : '' %>><%= t %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="f-category">Category</label>
+          <select id="f-category" data-key="category">
+            <option value="all">All categories</option>
+            <% categories.forEach(c => { %>
+            <option value="<%= c %>" <%= query.category === c ? 'selected' : '' %>><%= c %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Price per night (USD)</label>
+          <div class="price-inputs">
+            <input type="number" data-key="min" placeholder="Min" min="0" value="<%= query.min || '' %>">
+            <span>–</span>
+            <input type="number" data-key="max" placeholder="Max" min="0" value="<%= query.max || '' %>">
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label for="f-beds">Bedrooms</label>
+          <select id="f-beds" data-key="bedrooms">
+            <option value="any">Any</option>
+            <% [1,2,3,4,5].forEach(b => { %>
+            <option value="<%= b %>" <%= query.bedrooms == b ? 'selected' : '' %>><%= b %>+</option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Amenities</label>
+          <div class="chip-row">
+            <% ['WiFi','Kitchen','Pool','Free Parking','Garden','Smart TV'].forEach(a => { %>
+            <button type="button" class="chip <%= query.amenity === a ? 'active' : '' %>" data-key="amenity" data-value="<%= a %>"><%= a %></button>
+            <% }) %>
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <a href="/properties" class="btn btn-ghost btn-sm filter-reset">Reset all filters</a>
+        </div>
+      </aside>
+
+      <!-- ============ RESULTS ============ -->
+      <div>
+        <div class="props-toolbar">
+          <div class="result-count"><b><%= count %></b> <%= count === 1 ? 'property' : 'properties' %> found</div>
+          <div class="toolbar-right">
+            <button class="btn btn-ghost btn-sm" data-map-toggle>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 6v6l18 6 3-3-18-6V3z"/><path d="M1 12l3 3"/></svg>
+              Map View
+            </button>
+            <select class="sort-select" aria-label="Sort properties">
+              <option value="" <%= !query.sort ? 'selected' : '' %>>Sort: Recommended</option>
+              <option value="price-asc" <%= query.sort === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
+              <option value="price-desc" <%= query.sort === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
+              <option value="rating" <%= query.sort === 'rating' ? 'selected' : '' %>>Highest Rated</option>
+              <option value="newest" <%= query.sort === 'newest' ? 'selected' : '' %>>Newest</option>
+            </select>
+            <div class="view-toggle">
+              <button data-view="grid" aria-label="Grid view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></button>
+              <button data-view="list" aria-label="List view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="map-panel"><div id="map"></div></div>
+
+        <div class="grid-cards">
+          <% if (properties.length) { %>
+            <% properties.forEach((p) => { %>
+              <%- include('partials/property-card', { p }) %>
+            <% }) %>
+          <% } else { %>
+            <div class="empty-state" style="grid-column:1/-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 21l-4.35-4.35"/><circle cx="10.5" cy="10.5" r="7.5"/><path d="M8 10.5h5"/></svg>
+              <h3>No properties found</h3>
+              <p>Try adjusting your filters or search term.</p>
+              <a href="/properties" class="btn btn-primary" style="margin-top:1rem">Clear Filters</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('partials/footer', { settings }) %>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/static/js/properties.js"></script>
+</body>
+</html>

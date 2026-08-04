@@ -1,0 +1,99 @@
+<%- include('partials/head', { title, active }) %>
+<%- include('partials/header', { active }) %>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="crumbs"><a href="/">Home</a> / <span>About</span></div>
+    <h1>The LeGrand Story</h1>
+    <p>Putting Siaya's hidden gems on the map — one verified stay at a time.</p>
+  </div>
+</section>
+
+<!-- Story -->
+<section class="section">
+  <div class="container">
+    <div class="story-grid">
+      <div class="story-media reveal reveal-left">
+        <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop" alt="Siaya landscape" loading="lazy">
+      </div>
+      <div class="story-body reveal reveal-right">
+        <span class="eyebrow">Our story</span>
+        <h2 style="font-size:clamp(1.7rem,3.5vw,2.4rem);margin-bottom:1.2rem">Born in Siaya, Built for Travellers</h2>
+        <p class="lead">“Every corner of Siaya has a story — we help you find the place where yours begins.”</p>
+        <p>LeGrand began with a simple frustration: Siaya County is home to some of Kenya's most beautiful lakeside villages, rolling hills and warm-hearted communities — yet finding a place to stay meant endless phone calls, outdated photos and unreliable information.</p>
+        <p>So we built the platform we wished existed. A clean, honest showcase of verified properties where travellers can browse beautiful homes, see real photos, and contact owners directly. No middlemen, no hidden fees — just genuine Siaya hospitality.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Mission / Why -->
+<section class="section section-soft" id="mission">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Why LeGrand?</span>
+      <h2>Our Mission & Promise</h2>
+    </div>
+    <div class="mission-grid">
+      <div class="feature-tile reveal">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+        <h3>Verified, Always</h3>
+        <p>Our team visits and verifies each property so the photos and details you see are honest.</p>
+      </div>
+      <div class="feature-tile reveal d1">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h3>Local First</h3>
+        <p>Every listing is owned and run by people from Siaya — your stay directly supports local families.</p>
+      </div>
+      <div class="feature-tile reveal d2">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+        <h3>Direct Connection</h3>
+        <p>Skip the booking platforms. Message owners on WhatsApp and arrange your stay personally.</p>
+      </div>
+      <div class="feature-tile reveal d3">
+        <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <h3>Community Growth</h3>
+        <p>Every booking fuels local tourism, creating income for hosts, guides and small businesses.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Team -->
+<section class="section" id="team">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Meet the team</span>
+      <h2>The People Behind LeGrand</h2>
+    </div>
+    <div class="team-grid">
+      <% team.forEach((m, i) => { %>
+      <div class="team-card reveal d<%= (i % 4) + 1 %>">
+        <div class="team-avatar"><%= m.name.split(' ').map(w => w[0]).join('').slice(0,2) %></div>
+        <h3><%= m.name %></h3>
+        <div class="role"><%= m.role %></div>
+        <p><%= m.bio %></p>
+      </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="section">
+  <div class="container">
+    <div class="cta-banner reveal">
+      <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=1600&auto=format&fit=crop" alt="" loading="lazy">
+      <h2>Come See Siaya for Yourself</h2>
+      <p>Whether you're planning a weekend escape or a family reunion, we'll help you find the perfect stay.</p>
+      <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+        <a href="/properties" class="btn btn-gold">Browse Stays</a>
+        <a href="/contact" class="btn btn-light">Get in Touch</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer', { settings }) %>
+</body>
+</html>
