@@ -40,7 +40,7 @@ async function sendEmail({ to, subject, html, text, replyTo }) {
       subject,
       html,
       text: text || html.replace(/<[^>]*>/g, ''),
-      ...(replyTo ? { reply_to: replyTo } : {}),
+      ...(replyTo ? { replyTo } : {}),
     });
 
     if (result.error) {
