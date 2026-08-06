@@ -5,6 +5,7 @@ const express = require('express');
 const db = require('../config/db');
 const { applyFilters } = require('./public');
 const { requireUserAuth } = require('../middleware/auth');
+const { sendContactNotification, sendContactConfirmation } = require('../config/mail');
 
 const router = express.Router();
 
@@ -48,18 +49,63 @@ router.get('/meta', (req, res) => {
 });
 
 // Contact form submission (also used by the contact page)
-router.post('/contact', (req, res) => {
-  const { name, email, phone, subject, message } = req.body;
-  if (!name || !message) {
-    return res.status(400).json({ error: 'Name and message are required.' });
+router.post('/contact', async (req, res) => {
+  const { name, email, phone, message } = req.body;
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: 'Name, email and message are required.' });
   }
+  const cleanName = String(name).slice(0, 120);
+  const cleanEmail = String(email).slice(0, 120);
+  const cleanPhone = String(phone || '').slice(0, 40);
+  const cleanMessage = String(message).slice(0, 4000);
+
   const enquiry = db.addEnquiry({
-    name: String(name).slice(0, 120),
-    email: String(email || '').slice(0, 120),
-    phone: String(phone || '').slice(0, 40),
-    subject: String(subject || 'General enquiry').slice(0, 200),
-    message: String(message).slice(0, 4000),
+    name: cleanName,
+    email: cleanEmail,
+    phone: cleanPhone,
+    subject: 'Contact Form Enquiry',
+    message: cleanMessage,
+    emailStatus: { notification: 'pending', confirmation: 'pending' },
   });
+
+  // Send emails and record status in the database
+  (async () => {
+    try {
+      const [notifResult, confirmResult] = await Promise.all([
+        sendContactNotification({
+          name: cleanName,
+          email: cleanEmail,
+          phone: cleanPhone,
+          subject: 'Contact Form Enquiry',
+          message: cleanMessage,
+        }),
+        sendContactConfirmation({ name: cleanName, email: cleanEmail }),
+      ]);
+
+      db.updateEnquiry(enquiry.id, {
+        emailStatus: {
+          notification: notifResult.ok ? 'sent' : 'failed',
+          notificationId: notifResult.id || null,
+          notificationError: notifResult.error || null,
+          confirmation: confirmResult.ok ? 'sent' : 'failed',
+          confirmationId: confirmResult.id || null,
+          confirmationError: confirmResult.error || null,
+          sentAt: new Date().toISOString(),
+        },
+      });
+    } catch (err) {
+      console.error('[api] Email send failed:', err.message);
+      db.updateEnquiry(enquiry.id, {
+        emailStatus: {
+          notification: 'failed',
+          confirmation: 'failed',
+          error: err.message,
+          sentAt: new Date().toISOString(),
+        },
+      });
+    }
+  })();
+
   res.status(201).json({ ok: true, id: enquiry.id });
 });
 

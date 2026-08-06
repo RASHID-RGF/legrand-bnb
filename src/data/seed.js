@@ -1,8 +1,9 @@
 // ============================================================
 // LeGrand — Seed data
-// 4 flagship stays (KIBOKO, SOKWE, DIGIDIGI, MAMBA) — all in
-// Siaya Town. DIGIDIGI, MAMBA and KIBOKO sit near Siaya Hotel,
-// while SOKWE is located near Siaya Prisons.
+// 4 flagship stays (KIBOKO, SOKWE, DIGIDIGI, MAMBA) — all
+// Bedsitters in Siaya Town. DIGIDIGI, MAMBA and KIBOKO sit
+// near Siaya Hotel, while SOKWE is near Siaya Prisons.
+// Prices: MAMBA KSh 2,000 | KIBOKO, SOKWE, DIGIDIGI KSh 1,500
 // Seeded automatically on first run.
 // ============================================================
 const bcrypt = require('bcryptjs');
@@ -42,10 +43,10 @@ const amenities = {
 const props = [
   {
     title: 'KIBOKO',
-    propertyType: 'Cottage',
+    propertyType: 'Bedsitter',
     category: 'Family',
     description:
-      'KIBOKO is a warm, self-contained cottage tucked into the heart of Siaya Town, only minutes from Siaya Hotel and a short walk from the county offices, banks, and the lively Siaya market. The stay offers a private compound, a shaded veranda for sundowners, and a fully equipped kitchen that makes longer stays feel easy and comfortable. Whether you are visiting for business, a weekend escape, or a quiet stopover, KIBOKO gives you privacy, convenience, and a true home-away-from-home feel.',
+      'KIBOKO is a warm, self-contained bedsitter tucked into the heart of Siaya Town, only minutes from Siaya Hotel and a short walk from the county offices, banks, and the lively Siaya market. The stay offers a private compound, a shaded veranda for sundowners, and a fully equipped kitchen that makes longer stays feel easy and comfortable. Whether you are visiting for business, a weekend escape, or a quiet stopover, KIBOKO gives you privacy, convenience, and a true home-away-from-home feel.',
     pricePerNight: 1500,
     location: 'Siaya Town',
     subCounty: 'Siaya Town',
@@ -87,11 +88,11 @@ const props = [
   },
   {
     title: 'SOKWE',
-    propertyType: 'Villa',
+    propertyType: 'Bedsitter',
     category: 'Luxury',
     description:
-      'SOKWE is a refined villa experience near Siaya Prisons, designed for guests who want spacious comfort and polished hospitality in one place. The home combines contemporary architecture with warm Kenyan hospitality — en-suite bedrooms, a gourmet kitchen, manicured gardens, and a private pool that make it ideal for family celebrations, executive retreats, or simply unwinding in style. Located just minutes from Siaya Town centre, SOKWE lets you enjoy privacy without sacrificing access to restaurants, business districts, and local landmarks.',
-    pricePerNight: 2000,
+      'SOKWE is a refined bedsitter experience near Siaya Prisons, designed for guests who want spacious comfort and polished hospitality in one place. The home combines contemporary architecture with warm Kenyan hospitality — en-suite bedrooms, a gourmet kitchen, manicured gardens, and a private pool that make it ideal for family celebrations, executive retreats, or simply unwinding in style. Located just minutes from Siaya Town centre, SOKWE lets you enjoy privacy without sacrificing access to restaurants, business districts, and local landmarks.',
+    pricePerNight: 1500,
     location: 'Siaya Town',
     subCounty: 'Siaya Town',
     county: 'Siaya',
@@ -132,11 +133,11 @@ const props = [
   },
   {
     title: 'DIGIDIGI',
-    propertyType: 'Lodge',
+    propertyType: 'Bedsitter',
     category: 'Family',
     description:
-      'DIGIDIGI is built for connection, laughter, and memorable stays in the middle of Siaya Town. With generous green lawns, a treehouse kids will love, bonfire evenings under the stars, and a kitchen fully stocked for home-cooked meals, this lodge is ideal for family get-togethers, birthdays, and slow weekends away. It is close to Siaya Hotel and easy to reach from the market and county landmarks, making it a practical base for both adventure and relaxation.',
-    pricePerNight: 1800,
+      'DIGIDIGI is built for connection, laughter, and memorable stays in the middle of Siaya Town. With generous green lawns, a treehouse kids will love, bonfire evenings under the stars, and a kitchen fully stocked for home-cooked meals, this bedsitter is ideal for family get-togethers, birthdays, and slow weekends away. It is close to Siaya Hotel and easy to reach from the market and county landmarks, making it a practical base for both adventure and relaxation.',
+    pricePerNight: 1500,
     location: 'Siaya Town',
     subCounty: 'Siaya Town',
     county: 'Siaya',
@@ -177,15 +178,15 @@ const props = [
   },
   {
     title: 'MAMBA',
-    propertyType: 'Bungalow',
+    propertyType: 'Bedsitter',
     category: 'Budget',
     description:
-      'MAMBA is a breezy, fully furnished bungalow beside Siaya Hotel in Siaya Town, offering a quiet, secure compound and an easy, walkable location for guests who want convenience without the stress. The open-plan living area, deck, and outdoor shower create a relaxed, comfortable atmosphere, while the compact layout keeps everything simple and accessible. It is a strong option for short stays, working travellers, and anyone who wants a practical, well-located base to enjoy Siaya Town on foot.',
-    pricePerNight: 1500,
+      'MAMBA is a breezy, fully furnished bedsitter beside Siaya Hotel in Siaya Town, offering a quiet, secure compound and an easy, walkable location for guests who want convenience without the stress. The open-plan living area, deck, and outdoor shower create a relaxed, comfortable atmosphere, while the compact layout keeps everything simple and accessible. It is a strong option for short stays, working travellers, and anyone who wants a practical, well-located base to enjoy Siaya Town on foot.',
+    pricePerNight: 2000,
     location: 'Siaya Town',
     subCounty: 'Siaya Town',
     county: 'Siaya',
-    bedrooms: 2,
+    bedrooms: 1,
     bathrooms: 1,
     guests: 2,
     phone: '+254 725 317 246',
