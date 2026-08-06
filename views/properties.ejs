@@ -77,7 +77,7 @@
         <div class="filter-group">
           <label>Amenities</label>
           <div class="chip-row">
-            <% ['WiFi','Kitchen','Pool','Free Parking','Garden','Smart TV'].forEach(a => { %>
+            <% ['WiFi','Kitchen','Pool','Free Parking','Smart TV'].forEach(a => { %>
             <button type="button" class="chip <%= query.amenity === a ? 'active' : '' %>" data-key="amenity" data-value="<%= a %>"><%= a %></button>
             <% }) %>
           </div>

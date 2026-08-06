@@ -213,6 +213,7 @@ h1, h2, h3, h4 { font-family: var(--font-display); line-height: 1.15; font-weigh
 
 .nav-user { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.35rem 0.3rem 0.45rem; border: 1px solid var(--line); border-radius: 999px; background: var(--card); }
 .nav-avatar { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-500); color: var(--green-950); font-weight: 800; font-size: 0.8rem; }
+.nav-avatar[src], img.nav-avatar { object-fit: cover; }
 .nav-user-name { font-size: 0.82rem; font-weight: 700; color: var(--ink); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-logout-form { display: flex; }
 .nav-logout { display: grid; place-items: center; width: 28px; height: 28px; border: none; border-radius: 50%; background: transparent; color: var(--muted); cursor: pointer; transition: background 0.25s, color 0.25s; }
@@ -1438,6 +1439,41 @@ table.admin-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 
 .demo-hint { margin-top: 1.4rem; padding: 0.9rem 1.1rem; border-radius: var(--radius-sm); background: var(--bg-soft); border: 1px dashed var(--line); font-size: 0.8rem; color: var(--muted); text-align: center; }
 .demo-hint b { color: var(--gold-600); }
+
+/* "Continue with Google" */
+.btn-google {
+  background: var(--card);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  gap: 0.6rem;
+  font-weight: 600;
+}
+.btn-google:hover {
+  border-color: var(--green-600);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.25rem 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {

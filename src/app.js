@@ -3,6 +3,12 @@
 // Discover Exceptional Stays Across Siaya.
 // ============================================================
 require('dotenv').config();
+
+// Prefer IPv4 for outbound connections — this machine's IPv6 route is dead and
+// makes Node's fetch to Google stall. (Also set in server.js; kept here so the
+// app works even when required directly.)
+require('dns').setDefaultResultOrder('ipv4first');
+
 const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
@@ -12,7 +18,6 @@ const auth = require('./middleware/auth');
 
 const publicRoutes = require('./routes/public');
 const apiRoutes = require('./routes/api');
-const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -59,6 +64,13 @@ app.locals.formatDate = (d) => {
 };
 
 app.locals.firstImage = (p) => (p && p.images && p.images.length ? p.images[0] : '/static/img/placeholder.svg');
+
+// Normalize any phone value to a wa.me-friendly number (digits only, +254 format).
+// Used for the second WhatsApp contact fallback when `whatsapp2` is missing.
+app.locals.waNumber = (n) => {
+  const digits = String(n == null ? '' : n).replace(/\D/g, '');
+  return digits.replace(/^0/, '254');
+};
 app.locals.escapeJson = (obj) => JSON.stringify(obj).replace(/</g, '\\u003c');
 app.locals.esc = (s) =>
   String(s == null ? '' : s)
@@ -78,11 +90,6 @@ app.use('/', publicRoutes);
 // JSON API (search, contact, map data)
 // ------------------------------------------------------------
 app.use('/api', apiRoutes);
-
-// ------------------------------------------------------------
-// Admin dashboard (JWT protected)
-// ------------------------------------------------------------
-app.use('/admin', adminRoutes);
 
 // ------------------------------------------------------------
 // 404 + error handling

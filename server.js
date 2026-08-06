@@ -2,6 +2,13 @@
 // LeGrand — Server entry point
 // ============================================================
 require('dotenv').config();
+
+// This machine's IPv6 route is unreliable (Google resolves to AAAA first),
+// which makes Node's fetch stall with "Connect Timeout Error". Prefer IPv4
+// for all outbound connections (MongoDB Atlas, Google OAuth, etc.).
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const app = require('./src/app');
 const db = require('./src/config/db');
 
@@ -17,9 +24,7 @@ const PORT = process.env.PORT || 4000;
       console.log('└──────────────────────────────────────────────┘');
       console.log(`  ▶  Mongo:     ${process.env.MONGO_DB || 'legrand'} database connected`);
       console.log(`  ▶  Site:      http://localhost:${PORT}`);
-      console.log(`  ▶  Admin:     http://localhost:${PORT}/admin/login`);
       console.log(`  ▶  API:       http://localhost:${PORT}/api/properties`);
-      console.log('  ▶  Demo admin: admin@legrand.co.ke / admin123');
     });
   } catch (err) {
     console.error('✖  Failed to connect to MongoDB:');

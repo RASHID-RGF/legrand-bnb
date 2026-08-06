@@ -131,6 +131,15 @@ router.get('/login', guestUserOnly, (req, res) => {
 router.post('/login', guestUserOnly, (req, res) => {
   const { email, password } = req.body;
   const user = db.getUserByEmail(email || '');
+  if (user && !user.passwordHash) {
+    return res.status(401).render('login', {
+      title: 'Sign In — LeGrand',
+      active: '',
+      error: 'This account uses Google sign-in. Please continue with Google below.',
+      message: null,
+      next: req.query.next || '/',
+    });
+  }
   if (!user || !bcrypt.compareSync(password || '', user.passwordHash)) {
     return res.status(401).render('login', {
       title: 'Sign In — LeGrand',
@@ -146,7 +155,7 @@ router.post('/login', guestUserOnly, (req, res) => {
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  res.redirect(req.query.next || '/');
+  res.redirect(safeNext(req.query.next));
 });
 
 router.get('/register', guestUserOnly, (req, res) => {
@@ -159,7 +168,7 @@ router.get('/register', guestUserOnly, (req, res) => {
 });
 
 router.post('/register', guestUserOnly, (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, confirmPassword } = req.body;
   const cleanEmail = String(email || '').trim().toLowerCase();
   const cleanName = String(name || '').trim();
   if (!cleanName || !cleanEmail || !password) {
@@ -186,6 +195,14 @@ router.post('/register', guestUserOnly, (req, res) => {
       next: req.query.next || '/',
     });
   }
+  if (password !== confirmPassword) {
+    return res.status(400).render('register', {
+      title: 'Create Account — LeGrand',
+      active: '',
+      error: 'Passwords do not match. Please re-enter both passwords.',
+      next: req.query.next || '/',
+    });
+  }
   if (db.getUserByEmail(cleanEmail)) {
     return res.status(409).render('register', {
       title: 'Create Account — LeGrand',
@@ -204,7 +221,8 @@ router.post('/register', guestUserOnly, (req, res) => {
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  res.redirect(req.query.next || '/');
+  // Always land on the home page after signing up, regardless of `next`.
+  res.redirect('/');
 });
 
 router.post('/logout', (req, res) => {
@@ -212,11 +230,160 @@ router.post('/logout', (req, res) => {
   res.redirect('/');
 });
 
+// ---------------- Google OAuth ("Continue with Google") ----------------
+// Google accounts are stored in the MongoDB users collection via db helpers.
+// Accounts created through Google have no password and provider:'google'.
+const crypto = require('crypto');
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const GOOGLE_CALLBACK_URL =
+  process.env.GOOGLE_CALLBACK_URL ||
+  `http://localhost:${process.env.PORT || 4000}/auth/google/callback`;
+
+const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
+
+// Fetch JSON from Google with a per-attempt timeout and retries. This machine's
+// connection to Google is flaky (dead IPv6 route / intermittent connect timeouts),
+// so a single shot can fail even though the network is up. Only network-level
+// failures are retried — an HTTP error response (e.g. invalid_grant) is returned
+// as-is so the real problem surfaces instead of being masked.
+async function googleFetchJson(url, options, { retries = 3, timeoutMs = 10000 } = {}) {
+  let lastErr = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      const json = await res.json().catch(() => ({}));
+      return { ok: res.ok, status: res.status, json };
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        await new Promise((r) => setTimeout(r, 600 * attempt));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// Only allow internal relative redirects — blocks open-redirect attacks.
+function safeNext(value) {
+  const target = String(value || '/');
+  return target.startsWith('/') && !target.startsWith('//') ? target : '/';
+}
+
+router.post('/auth/google', (req, res) => {
+  if (!googleEnabled()) {
+    return res.status(501).render('error', {
+      title: 'Google Sign-In Unavailable',
+      active: '',
+      message: 'Google sign-in is not configured yet. Please use email and password instead.',
+    });
+  }
+  const state = crypto.randomBytes(16).toString('hex');
+  const next = safeNext(req.body.next || req.query.next);
+  res.cookie('legrand_oauth_state', state, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+  res.cookie('legrand_oauth_next', next, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: GOOGLE_CALLBACK_URL,
+    response_type: 'code',
+    scope: 'openid email profile',
+    state,
+    prompt: 'select_account',
+  });
+  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+});
+
+router.get('/auth/google/callback', async (req, res) => {
+  const { code, state, error } = req.query;
+  const savedState = req.cookies && req.cookies.legrand_oauth_state;
+  const next = safeNext(req.cookies && req.cookies.legrand_oauth_next);
+  res.clearCookie('legrand_oauth_state');
+  res.clearCookie('legrand_oauth_next');
+
+  const renderFailure = (message) =>
+    res.status(400).render('login', {
+      title: 'Sign In — LeGrand',
+      active: '',
+      error: message,
+      message: null,
+      next,
+    });
+
+  if (error === 'access_denied') {
+    return renderFailure('Google sign-in was cancelled. Please try again or use email and password.');
+  }
+  if (!googleEnabled()) {
+    return renderFailure('Google sign-in is not configured yet.');
+  }
+  if (!code || !savedState || state !== savedState) {
+    return renderFailure('Google sign-in failed. Please try again.');
+  }
+
+  try {
+    const { ok: tokenOk, status: tokenStatus, json: tokens } = await googleFetchJson(
+      'https://oauth2.googleapis.com/token',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: GOOGLE_CLIENT_ID,
+          client_secret: GOOGLE_CLIENT_SECRET,
+          redirect_uri: GOOGLE_CALLBACK_URL,
+          grant_type: 'authorization_code',
+        }),
+      }
+    );
+    if (!tokenOk || !tokens.access_token) {
+      throw new Error(
+        `Google token exchange failed (HTTP ${tokenStatus}): ${tokens.error_description || tokens.error || 'unknown error'}`
+      );
+    }
+
+    const { ok: userOk, status: userStatus, json: profile } = await googleFetchJson(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      {
+        headers: { Authorization: `Bearer ${tokens.access_token}` },
+      }
+    );
+    if (!userOk || !profile.email || !profile.email_verified) {
+      throw new Error(`Could not verify the Google account (HTTP ${userStatus})`);
+    }
+
+    const user = db.findOrCreateGoogleUser({
+      googleId: String(profile.sub),
+      email: String(profile.email),
+      name: String(profile.name || profile.given_name || ''),
+      picture: profile.picture || null,
+    });
+    res.cookie('legrand_user_token', signUserToken(user), {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+    res.redirect(safeNext(next));
+  } catch (err) {
+    console.error('[google-auth]', err.message, err.cause && err.cause.code ? `(${err.cause.code})` : '');
+    return res.status(500).render('login', {
+      title: 'Sign In — LeGrand',
+      active: '',
+      error:
+        'Google sign-in failed. This is usually a temporary network issue — please try again, or use email and password.',
+      message: null,
+      next,
+    });
+  }
+});
+
 // Everything below requires a signed-in visitor.
-// Skip /admin and /api — those are mounted elsewhere and must not be
-// intercepted by the public router's catch-all (admin login, API etc.).
+// Skip /api — the API router has its own auth and must not be intercepted
+// by the public router's catch-all.
 router.use((req, res, next) => {
-  if (req.path.startsWith('/admin') || req.path.startsWith('/api')) return next();
+  if (req.path.startsWith('/api')) return next();
   return requireUserAuth(req, res, next);
 });
 

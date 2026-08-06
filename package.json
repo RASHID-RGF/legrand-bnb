@@ -7,7 +7,7 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node src/data/seed.js",
-    "check": "node --check server.js && node --check src/routes/public.js && node --check src/routes/admin.js && node --check src/routes/api.js && node --check src/config/db.js && node --check src/middleware/auth.js"
+    "check": "node --check server.js && node --check src/routes/public.js && node --check src/routes/api.js && node --check src/config/db.js && node --check src/middleware/auth.js"
   },
   "keywords": [
     "legrand",

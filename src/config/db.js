@@ -19,7 +19,6 @@ const MONGO_DB = process.env.MONGO_DB || 'legrand';
 const COLLECTIONS = [
   'properties',
   'users',
-  'admins',
   'enquiries',
   'categories',
   'testimonials',
@@ -42,7 +41,6 @@ const flexible = new mongoose.Schema({}, { strict: false, id: false, versionKey:
 const models = {
   properties: mongoose.model('Property', flexible, 'properties'),
   users: mongoose.model('User', flexible, 'users'),
-  admins: mongoose.model('Admin', flexible, 'admins'),
   enquiries: mongoose.model('Enquiry', flexible, 'enquiries'),
   categories: mongoose.model('Category', flexible, 'categories'),
   testimonials: mongoose.model('Testimonial', flexible, 'testimonials'),
@@ -75,7 +73,7 @@ async function connect() {
 // processes (e.g. `node --watch` restarts) ever write at the same time.
 // Only collections carrying app `id` fields get the id index.
 async function ensureIndexes() {
-  const withIds = ['properties', 'users', 'admins', 'enquiries'];
+  const withIds = ['properties', 'users', 'enquiries'];
   for (const name of withIds) {
     try {
       await models[name].collection.createIndex({ id: 1 }, { unique: true });
@@ -88,18 +86,22 @@ async function ensureIndexes() {
   } catch (err) {
     console.error('[mongo] could not create unique index on users.email:', err.message);
   }
+  try {
+    await models.users.collection.createIndex({ googleId: 1 }, { unique: true, sparse: true });
+  } catch (err) {
+    console.error('[mongo] could not create unique index on users.googleId:', err.message);
+  }
 }
 
 // Seed/migrate ONLY when the database is completely empty — never clobber
 // existing Atlas data. Existing db.json is migrated on first run so no data
 // is lost (the old demo visitor account is dropped).
 async function ensureSeeded() {
-  const [props, users, admins] = await Promise.all([
+  const [props, users] = await Promise.all([
     models.properties.estimatedDocumentCount(),
     models.users.estimatedDocumentCount(),
-    models.admins.estimatedDocumentCount(),
   ]);
-  if (props > 0 || users > 0 || admins > 0) return;
+  if (props > 0 || users > 0) return;
 
   let payload = null;
   if (fs.existsSync(DB_PATH)) {
@@ -115,6 +117,8 @@ async function ensureSeeded() {
   payload.users = (payload.users || []).filter(
     (u) => u.email !== 'user@legrand.co.ke' && u.id !== 'user-1'
   );
+  // No admin accounts anymore — drop any legacy admin payload
+  delete payload.admins;
 
   for (const name of COLLECTIONS) {
     await writeCollection(name, payload[name]);
@@ -341,13 +345,39 @@ function deleteUser(uid) {
   persist('users');
 }
 
-// ---------------- Admins ----------------
-function getAdminByEmail(email) {
-  return load().admins.find((a) => a.email.toLowerCase() === String(email).toLowerCase());
+// ---------------- Google OAuth users ----------------
+function getUserByGoogleId(googleId) {
+  return getUsers().find((u) => u.googleId === googleId);
 }
 
-function getAdminById(aid) {
-  return load().admins.find((a) => a.id === aid);
+// Find a user by Google profile and create one if needed. Matches on googleId
+// first, then on verified email so a Google sign-in links to an existing
+// password account instead of creating a duplicate.
+function findOrCreateGoogleUser({ googleId, email, name, picture }) {
+  const dbData = load();
+  if (!dbData.users) dbData.users = [];
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  const existing =
+    getUserByGoogleId(googleId) ||
+    dbData.users.find((u) => u.email && u.email.toLowerCase() === cleanEmail);
+  if (existing) {
+    const patch = { lastLoginAt: new Date().toISOString() };
+    if (!existing.googleId) patch.googleId = googleId;
+    if (!existing.provider) patch.provider = 'google';
+    if (picture && !existing.picture) patch.picture = picture;
+    if (name && (!existing.name || existing.name === existing.email)) patch.name = name;
+    return updateUser(existing.id, patch) || existing;
+  }
+  const user = {
+    provider: 'google',
+    googleId,
+    email: cleanEmail,
+    name: name || cleanEmail.split('@')[0],
+    picture: picture || null,
+    emailVerified: true,
+    lastLoginAt: new Date().toISOString(),
+  };
+  return addUser(user);
 }
 
 // ---------------- Testimonials ----------------
@@ -373,13 +403,13 @@ module.exports = {
   getCategories,
   addCategory,
   deleteCategory,
-  getAdminByEmail,
-  getAdminById,
   getUsers,
   getUserByEmail,
   getUserById,
+  getUserByGoogleId,
   addUser,
   updateUser,
   deleteUser,
+  findOrCreateGoogleUser,
   getTestimonials,
 };

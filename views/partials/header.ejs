@@ -18,7 +18,11 @@
     <div class="nav-actions">
       <% if (typeof user !== 'undefined' && user) { %>
       <div class="nav-user hide-sm">
+        <% if (user.picture) { %>
+        <img class="nav-avatar" src="<%= esc(user.picture) %>" alt="">
+        <% } else { %>
         <span class="nav-avatar"><%= user.name ? user.name.trim().charAt(0).toUpperCase() : 'U' %></span>
+        <% } %>
         <span class="nav-user-name"><%= user.name %></span>
         <form action="/logout" method="POST" class="nav-logout-form">
           <button type="submit" class="nav-logout" aria-label="Sign out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg></button>
