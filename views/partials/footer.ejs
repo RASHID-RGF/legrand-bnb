@@ -83,6 +83,34 @@
   <div class="lb-counter"></div>
 </div>
 
+<!-- AI Concierge chat widget -->
+<div class="ai-chat">
+  <div class="ai-chat-panel" role="dialog" aria-label="LeGrand AI concierge chat">
+    <div class="ai-chat-head">
+      <div class="ai-chat-avatar">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.7L19.6 9l-5.7 1.9L12 16.6l-1.9-5.7L4.4 9l5.7-1.3z"/><path d="M19 14l.95 2.85L22.8 17.8l-2.85.95L19 21.6l-.95-2.85-2.85-.95 2.85-.95z" opacity=".75"/></svg>
+      </div>
+      <div class="ai-chat-title">
+        <b>LeGrand Concierge</b>
+        <span>AI assistant · replies instantly</span>
+      </div>
+      <button class="ai-chat-close" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="ai-chat-body" id="aiChatBody"></div>
+    <div class="ai-chat-foot">
+      <form class="ai-form" id="aiForm">
+        <input id="aiInput" type="text" placeholder="Ask about stays in Siaya…" maxlength="1000" autocomplete="off" aria-label="Message the AI assistant">
+        <button type="submit" aria-label="Send message"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/></svg></button>
+      </form>
+      <span class="ai-note">Powered by Google Gemini · answers may be imperfect</span>
+    </div>
+  </div>
+  <button class="ai-chat-fab" id="aiChatFab" aria-label="Chat with the AI assistant" aria-expanded="false">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.7L19.6 9l-5.7 1.9L12 16.6l-1.9-5.7L4.4 9l5.7-1.3z"/><path d="M19 14l.95 2.85L22.8 17.8l-2.85.95L19 21.6l-.95-2.85-2.85-.95 2.85-.95z" opacity=".75"/></svg>
+  </button>
+</div>
+
 <div class="toast-stack"></div>
 
 <script src="/static/js/main.js"></script>
+<script src="/static/js/ai-chat.js"></script>

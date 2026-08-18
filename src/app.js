@@ -18,6 +18,7 @@ const auth = require('./middleware/auth');
 
 const publicRoutes = require('./routes/public');
 const apiRoutes = require('./routes/api');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 
@@ -88,7 +89,10 @@ app.use('/', publicRoutes);
 
 // ------------------------------------------------------------
 // JSON API (search, contact, map data)
+// AI concierge is public — mounted at /api/ai, before the
+// auth-gated API so it never requires sign-in
 // ------------------------------------------------------------
+app.use('/api/ai', aiRoutes);
 app.use('/api', apiRoutes);
 
 // ------------------------------------------------------------

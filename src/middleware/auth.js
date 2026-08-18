@@ -47,6 +47,13 @@ function requireUserAuth(req, res, next) {
   });
 }
 
+// Only allow internal relative redirect targets — blocks open-redirect attacks
+// (e.g. ?next=//evil.com) on every route guarded by this middleware.
+function safeTarget(value) {
+  const target = String(value || '/');
+  return target.startsWith('/') && !target.startsWith('//') ? target : '/';
+}
+
 // Block: signed-in visitors away from /login & /register
 function guestUserOnly(req, res, next) {
   const token = req.cookies && req.cookies[USER_COOKIE];
@@ -54,7 +61,7 @@ function guestUserOnly(req, res, next) {
     try {
       const payload = jwt.verify(token, JWT_SECRET);
       if (db.getUserById(payload.id)) {
-        return res.redirect(req.query.next || '/');
+        return res.redirect(safeTarget(req.query.next));
       }
     } catch (err) {
       /* expired/invalid — allow */

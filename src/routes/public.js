@@ -243,6 +243,32 @@ const GOOGLE_CALLBACK_URL =
 
 const googleEnabled = () => Boolean(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
 
+// Device-scoped "known Google accounts": after a successful Google sign-in we
+// record the account's email in an httpOnly cookie, so the in-app account
+// chooser only ever lists the visitor's OWN accounts — never everyone's.
+const KNOWN_GOOGLE_COOKIE = 'legrand_google_accounts';
+
+function readKnownGoogleEmails(req) {
+  try {
+    const raw = req.cookies && req.cookies[KNOWN_GOOGLE_COOKIE];
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list.map((e) => String(e).toLowerCase()) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function rememberGoogleEmail(req, res, email) {
+  const known = readKnownGoogleEmails(req);
+  const clean = String(email || '').toLowerCase();
+  if (clean && !known.includes(clean)) known.push(clean);
+  res.cookie(KNOWN_GOOGLE_COOKIE, JSON.stringify(known.slice(-10)), {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: 365 * 24 * 60 * 60 * 1000,
+  });
+}
+
 // Fetch JSON from Google with a per-attempt timeout and retries. This machine's
 // connection to Google is flaky (dead IPv6 route / intermittent connect timeouts),
 // so a single shot can fail even though the network is up. Only network-level
@@ -274,6 +300,35 @@ function safeNext(value) {
   return target.startsWith('/') && !target.startsWith('//') ? target : '/';
 }
 
+// In-app account picker: clicking "Continue with Google" lands here so the
+// visitor sees the Google accounts they have used from THIS browser and picks
+// one. Only accounts recorded in the device cookie are shown — never other
+// people's. Choosing one forwards login_hint to Google (with prompt=select_account
+// so Google still shows its own chooser and lets them switch accounts there).
+router.get('/auth/google/choose', guestUserOnly, (req, res) => {
+  if (!googleEnabled()) {
+    return res.status(501).render('error', {
+      title: 'Google Sign-In Unavailable',
+      active: '',
+      message: 'Google sign-in is not configured yet. Please use email and password instead.',
+    });
+  }
+  const next = safeNext(req.query.next);
+  const known = readKnownGoogleEmails(req);
+  const accounts = (db.getUsers() || [])
+    .filter(
+      (u) => u.provider === 'google' && known.includes(String(u.email || '').toLowerCase())
+    )
+    .map(({ name, email, picture, lastLoginAt }) => ({ name, email, picture, lastLoginAt }))
+    .sort((a, b) => new Date(b.lastLoginAt || 0) - new Date(a.lastLoginAt || 0));
+  res.render('google-choose', {
+    title: 'Choose Account — LeGrand',
+    active: '',
+    accounts,
+    next,
+  });
+});
+
 router.post('/auth/google', (req, res) => {
   if (!googleEnabled()) {
     return res.status(501).render('error', {
@@ -294,6 +349,9 @@ router.post('/auth/google', (req, res) => {
     state,
     prompt: 'select_account',
   });
+  // Pre-focus the picked account in Google's chooser (they can still switch)
+  const loginHint = String(req.body.login_hint || '').trim();
+  if (loginHint) params.set('login_hint', loginHint);
   res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 });
 
@@ -365,6 +423,8 @@ router.get('/auth/google/callback', async (req, res) => {
       sameSite: 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+    // Record this account on this device so the in-app chooser can list it later
+    rememberGoogleEmail(req, res, profile.email);
     res.redirect(safeNext(next));
   } catch (err) {
     console.error('[google-auth]', err.message, err.cause && err.cause.code ? `(${err.cause.code})` : '');

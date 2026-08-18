@@ -60,7 +60,9 @@
   if (burger && mobileMenu) {
     burger.addEventListener('click', () => mobileMenu.classList.add('open'));
     if (mobileClose) mobileClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
-    $$('.mobile-menu a').forEach((a) => a.addEventListener('click', () => mobileMenu.classList.remove('open')));
+    $$('.mobile-menu a, .mobile-menu [data-ai-open]').forEach((el) =>
+      el.addEventListener('click', () => mobileMenu.classList.remove('open'))
+    );
   }
 
   // ---------------- Reveal on scroll ----------------

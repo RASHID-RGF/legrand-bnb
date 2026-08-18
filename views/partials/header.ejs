@@ -13,6 +13,10 @@
       <a href="/blog" class="<%= current === 'blog' ? 'active' : '' %>">Blog</a>
       <a href="/about" class="<%= current === 'about' ? 'active' : '' %>">About</a>
       <a href="/contact" class="<%= current === 'contact' ? 'active' : '' %>">Contact</a>
+      <button type="button" class="nav-ai" data-ai-open aria-haspopup="dialog" aria-expanded="false" aria-label="Chat with the AI concierge">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.7L19.6 9l-5.7 1.9L12 16.6l-1.9-5.7L4.4 9l5.7-1.3z"/><path d="M19 14l.95 2.85L22.8 17.8l-2.85.95L19 21.6l-.95-2.85-2.85-.95 2.85-.95z" opacity=".75"/></svg>
+        AI Concierge
+      </button>
     </div>
 
     <div class="nav-actions">
@@ -56,6 +60,10 @@
   <a href="/blog" class="<%= current === 'blog' ? 'active' : '' %>">Blog</a>
   <a href="/about" class="<%= current === 'about' ? 'active' : '' %>">About</a>
   <a href="/contact" class="<%= current === 'contact' ? 'active' : '' %>">Contact</a>
+  <button type="button" class="nav-ai" data-ai-open aria-haspopup="dialog" aria-expanded="false" aria-label="Chat with the AI concierge">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.7L19.6 9l-5.7 1.9L12 16.6l-1.9-5.7L4.4 9l5.7-1.3z"/><path d="M19 14l.95 2.85L22.8 17.8l-2.85.95L19 21.6l-.95-2.85-2.85-.95 2.85-.95z" opacity=".75"/></svg>
+    AI Concierge
+  </button>
   <% if (typeof user !== 'undefined' && user) { %>
   <a href="/favorites" class="<%= current === 'favorites' ? 'active' : '' %>">Favorites</a>
   <form action="/logout" method="POST"><button type="submit" class="btn btn-ghost btn-sm" style="width:100%">Sign Out</button></form>

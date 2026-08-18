@@ -10,6 +10,7 @@ const path = require('path');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 const { seedDatabase } = require('../data/seed');
+const { ensureWorkingResolver, dnsLookup } = require('./dns');
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'db.json');
 
@@ -58,9 +59,17 @@ async function connect() {
   if (!MONGO_URI) {
     throw new Error('MONGO_URI is missing — add it to your .env file (see .env.example).');
   }
+  // App-level DNS workaround: falls back to public DNS only when the
+  // system resolver is unreachable (see dns.js). The custom lookup is
+  // attached only when the fallback is active — on healthy systems the
+  // driver keeps its default resolution (which honors /etc/hosts & NSS).
+  const dnsFallbackActive = await ensureWorkingResolver();
   await mongoose.connect(MONGO_URI, {
     dbName: MONGO_DB,
-    serverSelectionTimeoutMS: 15000,
+    // Generous timeout: this machine's path to Atlas is intermittently slow
+    // (occasional 20-25s stalls); 15s caused spurious boot failures.
+    serverSelectionTimeoutMS: 30000,
+    ...(dnsFallbackActive ? { lookup: dnsLookup } : {}),
   });
   connected = true;
   await ensureSeeded();

@@ -9,14 +9,33 @@ require('dotenv').config();
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
 
+const { ensureWorkingResolver } = require('./src/config/dns');
 const app = require('./src/app');
 const db = require('./src/config/db');
 
 const PORT = process.env.PORT || 4000;
 
+// Retry the initial connect a few times — this machine's path to Atlas is
+// intermittently slow and a single attempt can stall past the timeout.
+async function connectWithRetry(attempts = 3) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      await db.connect();
+      return;
+    } catch (err) {
+      if (attempt === attempts) throw err;
+      console.warn(`[boot] Mongo connect attempt ${attempt} failed — retrying... (${err.message})`);
+      await new Promise((r) => setTimeout(r, 2000 * attempt));
+    }
+  }
+}
+
 (async () => {
   try {
-    await db.connect();
+    // App-level DNS workaround (idempotent): switches to public DNS only
+    // when the system resolver is unreachable. db.connect() also calls it.
+    await ensureWorkingResolver();
+    await connectWithRetry();
     app.listen(PORT, () => {
       console.log('┌──────────────────────────────────────────────┐');
       console.log('│              ✦  LEGRAND  ✦                  │');
