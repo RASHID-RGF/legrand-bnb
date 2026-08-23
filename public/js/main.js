@@ -33,7 +33,7 @@
   // ---------------- Preloader ----------------
   window.addEventListener('load', () => {
     const pre = $('.preloader');
-    if (pre) setTimeout(() => pre.classList.add('hidden'), 500);
+    if (pre) setTimeout(() => pre.classList.add('hidden'), 100);
   });
   // Safety: hide preloader after 4s no matter what
   setTimeout(() => {

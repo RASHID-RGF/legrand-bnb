@@ -9,6 +9,13 @@ const { sendContactNotification, sendContactConfirmation } = require('../config/
 
 const router = express.Router();
 
+function cardImage(url) {
+  const value = String(url || '/static/img/placeholder.svg');
+  return value.includes('images.unsplash.com')
+    ? value.replace(/([?&])w=\d+/, '$1w=700')
+    : value;
+}
+
 // All API endpoints require a signed-in visitor
 router.use(requireUserAuth);
 
@@ -28,7 +35,7 @@ router.get('/properties', (req, res) => {
     bathrooms: p.bathrooms,
     guests: p.guests,
     rating: p.rating,
-    image: p.images[0],
+    image: cardImage(p.images && p.images[0]),
     featured: p.featured,
     lat: p.lat,
     lng: p.lng,

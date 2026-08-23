@@ -12,6 +12,7 @@ require('dns').setDefaultResultOrder('ipv4first');
 const path = require('path');
 const express = require('express');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const db = require('./config/db');
 const auth = require('./middleware/auth');
@@ -31,13 +32,16 @@ app.set('views', path.join(__dirname, '..', 'views'));
 // ------------------------------------------------------------
 // Middleware
 // ------------------------------------------------------------
+// Compress server-rendered HTML, CSS, JavaScript, and JSON responses.
+app.use(compression());
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(cookieParser());
 
-// Static assets
-app.use('/static', express.static(path.join(__dirname, '..', 'public')));
-app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
+// Static assets: cache browser-safe assets so CSS and JavaScript are not
+// downloaded again on every navigation.
+app.use('/static', express.static(path.join(__dirname, '..', 'public'), { maxAge: '1d' }));
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads'), { maxAge: '1d' }));
 
 // ------------------------------------------------------------
 // Locals shared with every template
@@ -64,7 +68,17 @@ app.locals.formatDate = (d) => {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 };
 
-app.locals.firstImage = (p) => (p && p.images && p.images.length ? p.images[0] : '/static/img/placeholder.svg');
+app.locals.imageUrl = (url, width = 800) => {
+  const value = String(url || '/static/img/placeholder.svg');
+  // Request only the size needed by the component instead of downloading
+  // the 1600px source image for small cards and galleries.
+  if (value.includes('images.unsplash.com')) {
+    return value.replace(/([?&])w=\d+/, `$1w=${width}`);
+  }
+  return value;
+};
+app.locals.firstImage = (p) =>
+  imageUrl(p && p.images && p.images.length ? p.images[0] : '/static/img/placeholder.svg', 700);
 
 // Normalize any phone value to a wa.me-friendly number (digits only, +254 format).
 // Used for the second WhatsApp contact fallback when `whatsapp2` is missing.

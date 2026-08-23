@@ -1,7 +1,7 @@
 <article class="property-card reveal visible" data-id="<%= p.id %>">
   <div class="card-media">
     <a href="/properties/<%= p.slug %>">
-      <img src="<%= firstImage(p) %>" alt="<%= p.title %>" loading="lazy">
+      <img src="<%= firstImage(p) %>" alt="<%= p.title %>" loading="lazy" decoding="async">
     </a>
     <% if (p.featured) { %><span class="card-ribbon">✦ Featured</span><% } %>
     <% if (p.category) { %><span class="card-category"><%= p.category %></span><% } %>
