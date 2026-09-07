@@ -1,21 +1,27 @@
 // ============================================================
-// LeGrand — MongoDB data layer (Mongoose)
-// All data lives in MongoDB Atlas. The module keeps the exact
-// same synchronous API the routes were written against, backed
-// by an in-memory cache that mirrors the collections; every
-// mutation is written through to Mongo immediately.
+// LeGrand — MySQL (MariaDB) data layer
+// All data lives in a local MySQL/MariaDB database. The module
+// keeps the exact same synchronous API the routes were written
+// against, backed by an in-memory cache that mirrors the tables;
+// every mutation is written through to MySQL immediately.
+//
+// Schema: one table per collection with a JSON `data` column.
+// Documents keep their app-level `id` field (indexed & unique),
+// so lookups and writes stay identical to the previous store.
 // ============================================================
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const mongoose = require('mongoose');
+const mysql = require('mysql2/promise');
 const { seedDatabase } = require('../data/seed');
-const { ensureWorkingResolver, dnsLookup } = require('./dns');
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'db.json');
 
-const MONGO_URI = process.env.MONGO_URI;
-const MONGO_DB = process.env.MONGO_DB || 'legrand';
+const MYSQL_HOST = process.env.MYSQL_HOST || '127.0.0.1';
+const MYSQL_PORT = Number(process.env.MYSQL_PORT || 3306);
+const MYSQL_USER = process.env.MYSQL_USER || 'legrand';
+const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || '';
+const MYSQL_DB = process.env.MYSQL_DB || 'legrand';
 
 const COLLECTIONS = [
   'properties',
@@ -28,89 +34,75 @@ const COLLECTIONS = [
   'settings',
 ];
 
-mongoose.set('strictQuery', false);
-
+let pool = null;
 let cache = null;
 let connected = false;
 
-// ---------------- Mongoose models ----------------
-// strict:false keeps the flexible document shapes the app relies on.
-// id:false disables Mongoose's built-in `id` virtual so the app's own
-// `id` field is stored as a real, queryable field (JWT auth depends on it).
-const flexible = new mongoose.Schema({}, { strict: false, id: false, versionKey: false });
-
-const models = {
-  properties: mongoose.model('Property', flexible, 'properties'),
-  users: mongoose.model('User', flexible, 'users'),
-  enquiries: mongoose.model('Enquiry', flexible, 'enquiries'),
-  categories: mongoose.model('Category', flexible, 'categories'),
-  testimonials: mongoose.model('Testimonial', flexible, 'testimonials'),
-  team: mongoose.model('TeamMember', flexible, 'team'),
-  destinations: mongoose.model('Destination', flexible, 'destinations'),
-  settings: mongoose.model('SiteSettings', flexible, 'settings'),
-};
-
-function stripMongo({ _id, __v, ...rest }) {
-  return rest;
-}
-
 // ---------------- Connection, seeding, cache ----------------
 async function connect() {
-  if (!MONGO_URI) {
-    throw new Error('MONGO_URI is missing — add it to your .env file (see .env.example).');
+  if (!MYSQL_PASSWORD && !process.env.MYSQL_ALLOW_EMPTY) {
+    throw new Error('MYSQL_PASSWORD is missing — add it to your .env file.');
   }
-  // App-level DNS workaround: falls back to public DNS only when the
-  // system resolver is unreachable (see dns.js). The custom lookup is
-  // attached only when the fallback is active — on healthy systems the
-  // driver keeps its default resolution (which honors /etc/hosts & NSS).
-  const dnsFallbackActive = await ensureWorkingResolver();
-  await mongoose.connect(MONGO_URI, {
-    dbName: MONGO_DB,
-    // Generous timeout: this machine's path to Atlas is intermittently slow
-    // (occasional 20-25s stalls); 15s caused spurious boot failures.
-    serverSelectionTimeoutMS: 30000,
-    ...(dnsFallbackActive ? { lookup: dnsLookup } : {}),
+  pool = mysql.createPool({
+    host: MYSQL_HOST,
+    port: MYSQL_PORT,
+    user: MYSQL_USER,
+    password: MYSQL_PASSWORD,
+    database: MYSQL_DB,
+    waitForConnections: true,
+    connectionLimit: 10,
+    // MariaDB auth plugins (unix_socket etc.) are handled automatically;
+    // keep unicode safe end-to-end.
+    charset: 'utf8mb4',
   });
+
+  // Fail fast if the database/user is not reachable.
+  await pool.query('SELECT 1');
   connected = true;
+
+  await ensureTables();
   await ensureSeeded();
-  await ensureIndexes();
   await reloadCache();
-  return mongoose.connection;
+  return pool;
 }
 
-// Unique indexes make duplicate documents impossible even if two
-// processes (e.g. `node --watch` restarts) ever write at the same time.
-// Only collections carrying app `id` fields get the id index.
-async function ensureIndexes() {
-  const withIds = ['properties', 'users', 'enquiries'];
-  for (const name of withIds) {
-    try {
-      await models[name].collection.createIndex({ id: 1 }, { unique: true });
-    } catch (err) {
-      console.error(`[mongo] could not create unique index on "${name}.id":`, err.message);
+async function ensureTables() {
+  // Unique key on `doc_id` makes duplicate documents impossible even if
+  // two processes (e.g. `node --watch` restarts) ever write at the same time.
+  for (const name of COLLECTIONS) {
+    await pool.query(
+      `CREATE TABLE IF NOT EXISTS \`${name}\` (
+         seq BIGINT AUTO_INCREMENT PRIMARY KEY,
+         doc_id VARCHAR(64) NULL,
+         data JSON NOT NULL,
+         UNIQUE KEY uniq_doc (\`doc_id\`)
+       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`
+    );
+  }
+  // Extra unique index for user emails (case-sensitive compare happens in
+  // app code, same as before; this just blocks exact duplicates).
+  // MariaDB syntax: index over a PERSISTENT virtual column (MySQL 8's
+  // functional-index syntax is not supported here).
+  try {
+    await pool.query(
+      "ALTER TABLE users ADD COLUMN email_vc VARCHAR(255) AS (JSON_UNQUOTE(JSON_EXTRACT(data, '$.email'))) PERSISTENT, ADD UNIQUE KEY uniq_user_email (email_vc)"
+    );
+  } catch (err) {
+    // 1060 = column exists, 1061 = index exists (already migrated) — safe.
+    if (err.errno !== 1060 && err.errno !== 1061) {
+      console.error('[mysql] could not create users.email index:', err.message);
     }
   }
-  try {
-    await models.users.collection.createIndex({ email: 1 }, { unique: true });
-  } catch (err) {
-    console.error('[mongo] could not create unique index on users.email:', err.message);
-  }
-  try {
-    await models.users.collection.createIndex({ googleId: 1 }, { unique: true, sparse: true });
-  } catch (err) {
-    console.error('[mongo] could not create unique index on users.googleId:', err.message);
-  }
 }
 
-// Seed/migrate ONLY when the database is completely empty — never clobber
-// existing Atlas data. Existing db.json is migrated on first run so no data
+// Seed ONLY when the database is completely empty — never clobber
+// existing data. Existing db.json is migrated on first run so no data
 // is lost (the old demo visitor account is dropped).
 async function ensureSeeded() {
-  const [props, users] = await Promise.all([
-    models.properties.estimatedDocumentCount(),
-    models.users.estimatedDocumentCount(),
-  ]);
-  if (props > 0 || users > 0) return;
+  const [[{ total }]] = await pool.query(
+    `SELECT (SELECT COUNT(*) FROM properties) + (SELECT COUNT(*) FROM users) AS total`
+  );
+  if (total > 0) return;
 
   let payload = null;
   if (fs.existsSync(DB_PATH)) {
@@ -132,46 +124,74 @@ async function ensureSeeded() {
   for (const name of COLLECTIONS) {
     await writeCollection(name, payload[name]);
   }
-  console.log(`[mongo] database "${MONGO_DB}" seeded`);
+  console.log(`[mysql] database "${MYSQL_DB}" seeded`);
 }
 
 async function reloadCache() {
-  cache = {};
+  const fresh = {};
   for (const name of COLLECTIONS) {
-    const Model = models[name];
+    const [rows] = await pool.query(
+      `SELECT data FROM \`${name}\` ORDER BY seq ASC`
+    );
+    const docs = rows.map((r) => normalizeRow(r.data));
     if (name === 'categories') {
-      cache[name] = (await Model.find().lean()).map((d) => d.name);
+      fresh[name] = docs.map((d) => d.name);
     } else if (name === 'settings') {
-      const doc = await Model.findOne().lean();
-      cache[name] = (doc && doc.data) || {};
+      fresh[name] = (docs[0] && docs[0].data) || {};
     } else {
-      cache[name] = (await Model.find().lean()).map(stripMongo);
+      fresh[name] = docs;
     }
   }
+  cache = fresh;
+}
+
+// JSON column values can arrive as strings depending on driver/config.
+function normalizeRow(value) {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value;
+    }
+  }
+  return value;
 }
 
 async function writeCollection(name, docs) {
-  const Model = models[name];
-  await Model.deleteMany({});
+  await pool.query(`DELETE FROM \`${name}\``);
   if (name === 'categories') {
-    if (Array.isArray(docs)) await Model.insertMany(docs.map((d) => ({ name: d })));
+    if (Array.isArray(docs) && docs.length) {
+      const values = docs.filter(Boolean).map((d) => [null, JSON.stringify({ name: d })]);
+      if (values.length) {
+        await pool.query(
+          `INSERT INTO \`${name}\` (doc_id, data) VALUES ?`,
+          [values]
+        );
+      }
+    }
   } else if (name === 'settings') {
-    if (docs) await Model.insertMany([{ data: docs }]);
+    if (docs && Object.keys(docs).length) {
+      await pool.query(`INSERT INTO \`${name}\` (doc_id, data) VALUES (?, ?)`, [
+        'settings',
+        JSON.stringify({ data: docs }),
+      ]);
+    }
   } else if (Array.isArray(docs) && docs.length) {
-    await Model.insertMany(docs);
+    const values = docs.map((d) => [d && d.id ? String(d.id) : null, JSON.stringify(d)]);
+    await pool.query(`INSERT INTO \`${name}\` (doc_id, data) VALUES ?`, [values]);
   }
 }
 
-// Serialize writes per collection so deleteMany+insertMany from concurrent
+// Serialize writes per collection so DELETE+INSERT from concurrent
 // mutations never interleave (which would duplicate documents).
 const writeQueues = {};
 
 function persist(name) {
-  if (!connected || !cache) return Promise.resolve();
+  if (!connected || !pool || !cache) return Promise.resolve();
   const prev = writeQueues[name] || Promise.resolve();
   const next = prev
     .then(() => writeCollection(name, cache[name]))
-    .catch((err) => console.error(`[mongo] failed to save "${name}":`, err.message));
+    .catch((err) => console.error(`[mysql] failed to save "${name}":`, err.message));
   writeQueues[name] = next;
   return next;
 }
@@ -279,12 +299,11 @@ function addEnquiry(data) {
 }
 
 function updateEnquiry(eid, data) {
-  const dbData = load();
-  const idx = dbData.enquiries.findIndex((e) => e.id === eid);
+  const idx = load().enquiries.findIndex((e) => e.id === eid);
   if (idx === -1) return null;
-  dbData.enquiries[idx] = { ...dbData.enquiries[idx], ...data, id: eid };
+  load().enquiries[idx] = { ...load().enquiries[idx], ...data, id: eid };
   persist('enquiries');
-  return dbData.enquiries[idx];
+  return load().enquiries[idx];
 }
 
 function deleteEnquiry(eid) {

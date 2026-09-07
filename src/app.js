@@ -78,7 +78,7 @@ app.locals.imageUrl = (url, width = 800) => {
   return value;
 };
 app.locals.firstImage = (p) =>
-  imageUrl(p && p.images && p.images.length ? p.images[0] : '/static/img/placeholder.svg', 700);
+  app.locals.imageUrl(p && p.images && p.images.length ? p.images[0] : '/static/img/placeholder.svg', 700);
 
 // Normalize any phone value to a wa.me-friendly number (digits only, +254 format).
 // Used for the second WhatsApp contact fallback when `whatsapp2` is missing.
