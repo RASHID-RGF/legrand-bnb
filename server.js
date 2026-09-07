@@ -14,6 +14,7 @@ const app = require('./src/app');
 const db = require('./src/config/db');
 
 const PORT = process.env.PORT || 4000;
+const MYSQL_DB_NAME = process.env.MYSQL_DB || 'legrand';
 
 // ------------------------------------------------------------
 // Start serving IMMEDIATELY — don't block on MySQL.
@@ -43,21 +44,7 @@ server.on('error', (err) => {
   throw err;
 });
 
-// Retry the MySQL connection a few times — a single attempt can fail
-// transiently while the server is still starting up.
-async function connectWithRetry(attempts = 3) {
-  for (let attempt = 1; attempt <= attempts; attempt++) {
-    try {
-      await db.connect();
-      return;
-    } catch (err) {
-      if (attempt === attempts) throw err;
-      console.warn(`[boot] MySQL connect attempt ${attempt} failed — retrying... (${err.message})`);
-      await new Promise((r) => setTimeout(r, 2000 * attempt));
-    }
-  }
-}
-
+// ------------------------------------------------------------
 // Background connect: never takes the site down. If MySQL is unreachable the
 // app keeps serving the local seed data, just without persistence. Note that
 // any writes made before the connection lands (e.g. a contact form in the
@@ -67,12 +54,14 @@ async function connectWithRetry(attempts = 3) {
     // App-level DNS workaround (idempotent): switches to public DNS only
     // when the system resolver is unreachable. db.connect() also calls it.
     await ensureWorkingResolver();
-    await connectWithRetry();
-    console.log(`  ▶  MySQL:     ${process.env.MYSQL_DB || 'legrand'} database connected — now serving live data`);
+    // ensureConnected retries a few times, then throws; it is also the entry
+    // point used by the serverless deployment (api/index.js).
+    await db.ensureConnected();
+    console.log(`  ▶  MySQL:     ${MYSQL_DB_NAME} database connected — now serving live data`);
   } catch (err) {
     console.error('✖  Could not connect to MySQL/MariaDB.');
     console.error('   ', err.message);
     console.error('   The site is still running on local seed data, but changes will not be saved.');
-    console.error('   Check MySQL_* values in your .env file and that MariaDB is running (sudo systemctl start mariadb).');
+    console.error('   Check MYSQL_URL (or MYSQL_*) in your .env file and that MariaDB is running.');
   }
 })();

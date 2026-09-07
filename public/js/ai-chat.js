@@ -67,6 +67,11 @@
   fab.addEventListener('click', () => (wrap.classList.contains('open') ? close() : open()));
   $('.ai-chat-close', wrap).addEventListener('click', close);
 
+  // Esc closes the chat when it's open
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && wrap.classList.contains('open')) close();
+  });
+
   // Navbar "AI Concierge" trigger (and any [data-ai-open] element) opens the chat
   document.querySelectorAll('[data-ai-open]').forEach((el) =>
     el.addEventListener('click', (e) => {

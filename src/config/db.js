@@ -17,11 +17,41 @@ const { seedDatabase } = require('../data/seed');
 
 const DB_PATH = path.join(__dirname, '..', 'data', 'db.json');
 
-const MYSQL_HOST = process.env.MYSQL_HOST || '127.0.0.1';
-const MYSQL_PORT = Number(process.env.MYSQL_PORT || 3306);
-const MYSQL_USER = process.env.MYSQL_USER || 'legrand';
-const MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || '';
-const MYSQL_DB = process.env.MYSQL_DB || 'legrand';
+// Connection settings: individual MYSQL_* variables, or a single MYSQL_URL
+// connection string (mysql://user:pass@host:port/dbname?ssl-mode=REQUIRED) as
+// handed out by cloud providers (Aiven, PlanetScale, Railway, …).
+// When MYSQL_URL is set it overrides the individual MYSQL_* values.
+let MYSQL_HOST = process.env.MYSQL_HOST || '127.0.0.1';
+let MYSQL_PORT = Number(process.env.MYSQL_PORT || 3306);
+let MYSQL_USER = process.env.MYSQL_USER || 'legrand';
+let MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || '';
+let MYSQL_DB = process.env.MYSQL_DB || 'legrand';
+let MYSQL_SSL = /^(true|1|yes)$/i.test(process.env.MYSQL_SSL || '');
+
+if (process.env.MYSQL_URL) {
+  try {
+    const u = new URL(process.env.MYSQL_URL);
+    MYSQL_HOST = u.hostname;
+    MYSQL_PORT = Number(u.port || 3306);
+    MYSQL_USER = decodeURIComponent(u.username);
+    MYSQL_PASSWORD = decodeURIComponent(u.password);
+    if (u.pathname.replace(/^\//, '')) MYSQL_DB = u.pathname.replace(/^\//, '');
+    const sslParam = (
+      u.searchParams.get('ssl-mode') ||
+      u.searchParams.get('sslmode') ||
+      u.searchParams.get('ssl') ||
+      ''
+    ).toLowerCase();
+    if (sslParam) MYSQL_SSL = !/^(false|0|disabled|no)$/i.test(sslParam);
+  } catch (err) {
+    throw new Error(`MYSQL_URL is not a valid connection string: ${err.message}`);
+  }
+}
+
+// How long the in-memory mirror may be stale before it is re-read from the
+// tables. On serverless (Vercel) several instances run side by side — a short
+// TTL lets each instance pick up the others' writes automatically.
+const CACHE_TTL_MS = Number(process.env.MYSQL_CACHE_TTL_MS || 15000);
 
 const COLLECTIONS = [
   'properties',
@@ -40,6 +70,7 @@ let connected = false;
 
 // ---------------- Connection, seeding, cache ----------------
 async function connect() {
+  if (connected && pool) return pool; // idempotent (serverless warm instances)
   if (!MYSQL_PASSWORD && !process.env.MYSQL_ALLOW_EMPTY) {
     throw new Error('MYSQL_PASSWORD is missing — add it to your .env file.');
   }
@@ -50,20 +81,67 @@ async function connect() {
     password: MYSQL_PASSWORD,
     database: MYSQL_DB,
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: Number(process.env.MYSQL_POOL_SIZE || 10),
     // MariaDB auth plugins (unix_socket etc.) are handled automatically;
     // keep unicode safe end-to-end.
     charset: 'utf8mb4',
+    // Cloud MySQL providers require TLS. When a CA certificate (MYSQL_SSL_CA,
+    // PEM format) is supplied it is verified; otherwise the connection is
+    // still encrypted but the certificate is not pinned.
+    ...(MYSQL_SSL
+      ? {
+          ssl: process.env.MYSQL_SSL_CA
+            ? { ca: process.env.MYSQL_SSL_CA, rejectUnauthorized: true }
+            : { rejectUnauthorized: false },
+        }
+      : {}),
   });
 
   // Fail fast if the database/user is not reachable.
-  await pool.query('SELECT 1');
+  try {
+    await pool.query('SELECT 1');
+  } catch (err) {
+    await pool.end().catch(() => {});
+    pool = null;
+    throw err;
+  }
   connected = true;
 
   await ensureTables();
   await ensureSeeded();
   await reloadCache();
   return pool;
+}
+
+// Connect with retries (transient failures during cold starts / startup).
+// Idempotent: concurrent callers share a single attempt, and a failure lets a
+// later caller retry from scratch. Used by server.js and the serverless entry.
+let connectPromise = null;
+async function ensureConnected(attempts = 3) {
+  if (connected && pool) return pool;
+  if (!connectPromise) {
+    connectPromise = (async () => {
+      let lastErr;
+      for (let attempt = 1; attempt <= attempts; attempt++) {
+        try {
+          return await connect();
+        } catch (err) {
+          lastErr = err;
+          if (attempt < attempts) {
+            console.warn(
+              `[mysql] connect attempt ${attempt}/${attempts} failed — retrying… (${err.message})`
+            );
+            await new Promise((r) => setTimeout(r, 1000 * attempt));
+          }
+        }
+      }
+      throw lastErr;
+    })().catch((err) => {
+      connectPromise = null;
+      throw err;
+    });
+  }
+  return connectPromise;
 }
 
 async function ensureTables() {
@@ -81,11 +159,12 @@ async function ensureTables() {
   }
   // Extra unique index for user emails (case-sensitive compare happens in
   // app code, same as before; this just blocks exact duplicates).
-  // MariaDB syntax: index over a PERSISTENT virtual column (MySQL 8's
-  // functional-index syntax is not supported here).
+  // `GENERATED ALWAYS AS … STORED` is the cross-compatible form: MySQL 5.7/8
+  // and MariaDB 10.2+ both accept it (MariaDB's PERSISTENT keyword is not
+  // valid on cloud MySQL; MySQL 8 functional indexes don't exist on MariaDB).
   try {
     await pool.query(
-      "ALTER TABLE users ADD COLUMN email_vc VARCHAR(255) AS (JSON_UNQUOTE(JSON_EXTRACT(data, '$.email'))) PERSISTENT, ADD UNIQUE KEY uniq_user_email (email_vc)"
+      "ALTER TABLE users ADD COLUMN email_vc VARCHAR(255) GENERATED ALWAYS AS (JSON_UNQUOTE(JSON_EXTRACT(data, '$.email'))) STORED, ADD UNIQUE KEY uniq_user_email (email_vc)"
     );
   } catch (err) {
     // 1060 = column exists, 1061 = index exists (already migrated) — safe.
@@ -127,6 +206,9 @@ async function ensureSeeded() {
   console.log(`[mysql] database "${MYSQL_DB}" seeded`);
 }
 
+let lastRefresh = 0;
+let refreshing = false;
+
 async function reloadCache() {
   const fresh = {};
   for (const name of COLLECTIONS) {
@@ -143,6 +225,20 @@ async function reloadCache() {
     }
   }
   cache = fresh;
+  lastRefresh = Date.now();
+}
+
+// Periodically re-read the tables so long-lived instances (a persistent
+// server, or a warm Vercel function) see writes made by other instances.
+function refreshCacheIfStale() {
+  if (refreshing || !connected || !pool) return;
+  if (Date.now() - lastRefresh < CACHE_TTL_MS) return;
+  refreshing = true;
+  reloadCache()
+    .catch((err) => console.error('[mysql] cache refresh failed:', err.message))
+    .finally(() => {
+      refreshing = false;
+    });
 }
 
 // JSON column values can arrive as strings depending on driver/config.
@@ -206,7 +302,10 @@ async function seedAll(payload) {
 
 // ---------------- Sync API (route-compatible) ----------------
 function load() {
-  if (cache) return cache;
+  if (cache) {
+    refreshCacheIfStale();
+    return cache;
+  }
   cache = seedDatabase(); // pre-connect fallback; connect() replaces it
   return cache;
 }
@@ -415,6 +514,7 @@ function getTestimonials() {
 
 module.exports = {
   connect,
+  ensureConnected,
   seedAll,
   load,
   save,

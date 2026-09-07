@@ -1564,6 +1564,10 @@ span.tbl-avatar-initial {
   animation: aiPulse 3s infinite;
 }
 .ai-chat-fab svg { width: 28px; height: 28px; }
+.ai-chat-fab .ai-fab-x { display: none; }
+.ai-chat.open .ai-chat-fab { animation: none; }
+.ai-chat.open .ai-chat-fab .ai-fab-sparkle { display: none; }
+.ai-chat.open .ai-chat-fab .ai-fab-x { display: block; }
 .ai-chat-fab:hover { transform: scale(1.1) translateY(-2px); }
 @keyframes aiPulse {
   0% { box-shadow: 0 12px 30px rgba(26,122,87,.45), 0 0 0 0 rgba(212,175,55,.4); }
