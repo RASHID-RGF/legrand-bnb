@@ -1,0 +1,58 @@
+<%- include('shell', { title, page }) %>
+
+  <div class="admin-top">
+    <div>
+      <h1>Database</h1>
+      <p>Read-only view of every collection. Pick a table on the left of the panel.</p>
+    </div>
+  </div>
+
+  <div class="admin-panel">
+    <div class="panel-head" style="gap:.5rem">
+      <h2><%= current.charAt(0).toUpperCase() + current.slice(1) %> <span class="badge badge-muted"><%= docs.length %> record<%= docs.length === 1 ? '' : 's' %></span></h2>
+      <div class="db-tabs">
+        <% collections.forEach((c) => { %>
+        <a href="/admin/db?c=<%= c.name %>" class="db-tab <%= c.name === current ? 'active' : '' %>"><%= c.label %></a>
+        <% }) %>
+      </div>
+    </div>
+
+    <% if (!docs.length) { %>
+      <div class="panel-body" style="color:var(--muted)">This collection is empty.</div>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr><% keys.forEach((k) => { %><th><%= k %></th><% }) %></tr>
+        </thead>
+        <tbody>
+          <% docs.forEach((d) => { %>
+          <tr>
+            <% keys.forEach((k) => {
+                 let v = d[k];
+                 if (v === undefined || v === null) v = '—';
+                 else if (Array.isArray(v)) v = v.length + ' item' + (v.length === 1 ? '' : 's');
+                 else if (typeof v === 'object') v = '{…}';
+                 else v = String(v);
+                 if (v.length > 90) v = v.slice(0, 90) + '…';
+                 const isId = k === 'id' || k === '_id';
+                 const isUrl = /^https?:\/\//.test(v);
+            %>
+            <td>
+              <% if (isUrl) { %><a href="<%= v %>" target="_blank" rel="noopener" class="cell-link"><%= v %></a>
+              <% } else if (isId) { %><code class="cell-code"><%= v %></code>
+              <% } else { %><%= v %><% } %>
+            </td>
+            <% }) %>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+</main>
+</div>
+</body>
+</html>

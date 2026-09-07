@@ -20,6 +20,7 @@ const auth = require('./middleware/auth');
 const publicRoutes = require('./routes/public');
 const apiRoutes = require('./routes/api');
 const aiRoutes = require('./routes/ai');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -94,6 +95,12 @@ app.locals.esc = (s) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+
+// ------------------------------------------------------------
+// Admin dashboard (password-protected, own session cookie)
+// Mounted before public routes so /admin is never shadowed.
+// ------------------------------------------------------------
+app.use(adminRoutes);
 
 // ------------------------------------------------------------
 // Public site

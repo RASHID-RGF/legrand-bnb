@@ -1,0 +1,25 @@
+<%- include('head', { title }) %>
+
+<div class="login-page" style="min-height:100vh">
+  <div class="login-card reveal visible">
+    <a href="/" class="brand"><img src="/static/img/logo.svg" alt="LeGrand"><span>Le<em>Grand</em></span></a>
+    <h1>Admin Access</h1>
+    <p>Enter the admin password to manage the database and users.</p>
+
+    <% if (error) { %><div class="alert alert-error"><%= error %></div><% } %>
+
+    <form action="/admin/login" method="POST">
+      <div class="form-field" style="margin-bottom:1.4rem">
+        <label for="a-password">Admin password</label>
+        <input type="password" id="a-password" name="password" required placeholder="••••••••" autofocus>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Unlock Dashboard</button>
+    </form>
+
+    <div style="text-align:center;margin-top:1.2rem">
+      <a href="/" style="font-size:.85rem;color:var(--muted)">← Back to site</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

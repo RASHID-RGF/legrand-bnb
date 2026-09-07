@@ -1,0 +1,78 @@
+<%- include('shell', { title, page }) %>
+
+  <div class="admin-top">
+    <div>
+      <h1>Users</h1>
+      <p>Every registered account — create, edit or remove access.</p>
+    </div>
+    <a href="/admin/users/new" class="btn btn-primary btn-sm">＋ Add user</a>
+  </div>
+
+  <div class="admin-panel">
+    <div class="panel-head">
+      <h2>All users <span class="badge badge-muted"><%= users.length %> total</span></h2>
+    </div>
+    <% if (!users.length) { %>
+      <div class="panel-body" style="color:var(--muted)">No users registered yet.</div>
+    <% } else { %>
+    <div class="table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Provider</th>
+            <th>Joined</th>
+            <th>Last sign-in</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% users.forEach((u) => { %>
+          <tr>
+            <td>
+              <div class="tbl-prop">
+                <% if (u.picture) { %>
+                <img class="tbl-avatar" src="<%= esc(u.picture) %>" alt="">
+                <% } else { %>
+                <span class="tbl-avatar tbl-avatar-initial"><%= esc((u.name || 'U').trim().charAt(0).toUpperCase()) %></span>
+                <% } %>
+                <span>
+                  <b><%= esc(u.name || 'Unnamed') %></b>
+                  <small><%= esc(u.email || '') %></small>
+                </span>
+              </div>
+            </td>
+            <td>
+              <% if (u.provider === 'google' || u.googleId) { %>
+              <span class="badge badge-blue">Google</span>
+              <% } else { %>
+              <span class="badge badge-green">Password</span>
+              <% } %>
+            </td>
+            <td><%= formatDate(u.createdAt) %></td>
+            <td><%= formatDate(u.lastLoginAt) %></td>
+            <td>
+              <div class="row-actions">
+                <a class="mini-btn" href="/admin/users/<%= encodeURIComponent(u.id) %>/edit" title="Edit user">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+                </a>
+                <form action="/admin/users/<%= encodeURIComponent(u.id) %>/delete" method="POST"
+                      onsubmit="return confirm('Delete <%= esc(u.email || 'this user') %>? This cannot be undone.');">
+                  <button type="submit" class="mini-btn danger" title="Delete user">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </div>
+
+</main>
+</div>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<%- include('shell', { title, page }) %>
+
+  <div class="admin-top">
+    <div>
+      <h1>Dashboard</h1>
+      <p>A quick look at everything stored in the LeGrand database.</p>
+    </div>
+    <a href="/" class="btn btn-ghost btn-sm">View site ↗</a>
+  </div>
+
+  <div class="stat-grid">
+    <a href="/admin/db?c=properties" class="stat-card">
+      <span class="stat-ico green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg></span>
+      <span><b><%= stats.properties %></b><span>Properties</span></span>
+    </a>
+    <a href="/admin/users" class="stat-card">
+      <span class="stat-ico gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+      <span><b><%= stats.users %></b><span>Users</span></span>
+    </a>
+    <a href="/admin/db?c=enquiries" class="stat-card">
+      <span class="stat-ico blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+      <span><b><%= stats.enquiries %></b><span>Enquiries</span></span>
+    </a>
+    <a href="/admin/db?c=testimonials" class="stat-card">
+      <span class="stat-ico red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17.75 5.83 21l1.18-6.88L2 9.24l6.91-1L12 2l3.09 6.24 6.91 1-5.01 4.88L18.17 21z"/></svg></span>
+      <span><b><%= stats.testimonials %></b><span>Testimonials</span></span>
+    </a>
+  </div>
+
+  <div class="admin-panel">
+    <div class="panel-head">
+      <h2>Quick actions</h2>
+    </div>
+    <div class="panel-body" style="display:flex;gap:.8rem;flex-wrap:wrap">
+      <a href="/admin/users/new" class="btn btn-primary btn-sm">＋ Add user</a>
+      <a href="/admin/db?c=users" class="btn btn-ghost btn-sm">Browse users table</a>
+      <a href="/admin/db?c=enquiries" class="btn btn-ghost btn-sm">Read enquiries</a>
+      <a href="/admin/db?c=settings" class="btn btn-ghost btn-sm">Site settings</a>
+    </div>
+  </div>
+
+</main>
+</div>
+</body>
+</html>
