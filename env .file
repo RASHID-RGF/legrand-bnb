@@ -39,7 +39,10 @@ MYSQL_SSL=false
 # GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
 
 # ---- AI Concierge (optional) ----
-# OPENAI_API_KEY=
+# Google Gemini API key — enables the LeGrand Concierge assistant at /api/ai/chat
+# GEMINI_API_KEY=
+# Model override (defaults to gemini-3.6-flash)
+# GEMINI_MODEL=gemini-3.6-flash
 
 # ---- App ----
 # PORT=3000
