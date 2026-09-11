@@ -11,7 +11,7 @@
     <div class="gallery-grid <%= property.images.length <= 3 ? 'g3' : '' %> reveal visible">
       <% property.images.slice(0, 5).forEach((img, i) => { %>
       <div class="g-item" data-gallery="<%= escapeJson(property.images) %>" data-start="<%= i %>">
-        <img src="<%= imageUrl(img, i === 0 ? 1000 : 700) %>" alt="<%= property.title %> photo <%= i + 1 %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>" decoding="async">
+        <img src="<%= img %>" alt="<%= property.title %> photo <%= i + 1 %>" loading="<%= i === 0 ? 'eager' : 'lazy' %>">
         <% if (i === 3 && property.images.length > 5) { %>
         <div class="gallery-more">+<%= property.images.length - 4 %> photos</div>
         <% } %>

@@ -31,5 +31,8 @@
     "multer": "^2.2.0",
     "mysql2": "^3.24.3",
     "resend": "^6.18.1"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
   }
 }

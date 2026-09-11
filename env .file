@@ -1,0 +1,46 @@
+# ============================================================
+# LeGrand — Environment Variables
+# Copy this file to .env and fill in the values.
+# ============================================================
+
+# ---- Session ----
+SESSION_SECRET=change-me-to-a-random-string
+
+# ---- Database (MySQL / MariaDB) ----
+# Option 1: Individual variables (local development)
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=legrand
+MYSQL_PASSWORD=
+MYSQL_DB=legrand
+MYSQL_SSL=false
+
+# Option 2: Connection string (cloud providers — PlanetScale, Aiven, Railway, etc.)
+# Supports both DATABASE_URL and MYSQL_URL — they are interchangeable.
+# DATABASE_URL=mysql://user:password@host:3306/dbname?ssl-mode=REQUIRED
+# MYSQL_URL=mysql://user:password@host:3306/dbname?ssl-mode=REQUIRED
+
+# Optional: Allow empty password (local dev with unix_socket auth)
+# MYSQL_ALLOW_EMPTY=true
+
+# Connection pool size (default: 10)
+# MYSQL_POOL_SIZE=10
+
+# Cache TTL in ms — how long in-memory mirror stays stale (default: 15000)
+# On serverless platforms (Vercel), keep this short so instances stay in sync.
+# MYSQL_CACHE_TTL_MS=15000
+
+# TLS CA certificate (PEM format) for cloud providers that require it
+# MYSQL_SSL_CA=
+
+# ---- Google OAuth (optional) ----
+# GOOGLE_CLIENT_ID=
+# GOOGLE_CLIENT_SECRET=
+# GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+
+# ---- AI Concierge (optional) ----
+# OPENAI_API_KEY=
+
+# ---- App ----
+# PORT=3000
+# NODE_ENV=production

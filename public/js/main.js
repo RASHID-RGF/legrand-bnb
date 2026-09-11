@@ -9,23 +9,33 @@
 
   // ---------------- Theme ----------------
   const theme = {
+    _get() { return document.documentElement.getAttribute('data-theme') || 'light'; },
     init() {
       const saved = localStorage.getItem('legrand-theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const mode = saved || (prefersDark ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', mode);
-      this.syncIcons(mode);
+      this.syncUI(mode);
     },
     toggle() {
-      const cur = document.documentElement.getAttribute('data-theme');
+      const cur = this._get();
       const next = cur === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('legrand-theme', next);
-      this.syncIcons(next);
+      this.syncUI(next);
+      // Show a subtle toast
+      if (window.LeGrandToast) {
+        window.LeGrandToast(next === 'dark' ? '🌙 Dark mode enabled' : '☀️ Light mode enabled');
+      }
     },
-    syncIcons(mode) {
-      $$('.theme-icon-sun').forEach((el) => (el.style.display = mode === 'dark' ? 'block' : 'none'));
-      $$('.theme-icon-moon').forEach((el) => (el.style.display = mode === 'dark' ? 'none' : 'block'));
+    syncUI(mode) {
+      const isDark = mode === 'dark';
+      $$('.theme-icon-sun').forEach((el) => { el.style.display = isDark ? 'block' : 'none'; });
+      $$('.theme-icon-moon').forEach((el) => { el.style.display = isDark ? 'none' : 'block'; });
+      $$('.theme-label').forEach((el) => { el.textContent = isDark ? 'Light Mode' : 'Dark Mode'; });
+      const meta = $('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', isDark ? '#07170f' : '#0a3d2c');
+      document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
     },
   };
   theme.init();

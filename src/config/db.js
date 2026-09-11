@@ -28,9 +28,10 @@ let MYSQL_PASSWORD = process.env.MYSQL_PASSWORD || '';
 let MYSQL_DB = process.env.MYSQL_DB || 'legrand';
 let MYSQL_SSL = /^(true|1|yes)$/i.test(process.env.MYSQL_SSL || '');
 
-if (process.env.MYSQL_URL) {
+const CONN_URL = process.env.DATABASE_URL || process.env.MYSQL_URL;
+if (CONN_URL) {
   try {
-    const u = new URL(process.env.MYSQL_URL);
+    const u = new URL(CONN_URL);
     MYSQL_HOST = u.hostname;
     MYSQL_PORT = Number(u.port || 3306);
     MYSQL_USER = decodeURIComponent(u.username);
@@ -44,7 +45,7 @@ if (process.env.MYSQL_URL) {
     ).toLowerCase();
     if (sslParam) MYSQL_SSL = !/^(false|0|disabled|no)$/i.test(sslParam);
   } catch (err) {
-    throw new Error(`MYSQL_URL is not a valid connection string: ${err.message}`);
+    throw new Error(`DATABASE_URL / MYSQL_URL is not a valid connection string: ${err.message}`);
   }
 }
 
